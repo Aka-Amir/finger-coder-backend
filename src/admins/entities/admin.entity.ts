@@ -26,7 +26,4 @@ export class Admin {
 
   @Column()
   password: string;
-
-  @Column()
-  lastLogin: string;
 }

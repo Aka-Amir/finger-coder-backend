@@ -11,14 +11,28 @@ export class AdminsService {
     @InjectRepository(Admin) private readonly adminRepo: Repository<Admin>,
   ) {}
 
-  async create(createAdminDto: CreateAdminDto) {
+  async create(createAdminDto: CreateAdminDto, superUser = false) {
     const { id } = await this.adminRepo.save({
       email: createAdminDto.email,
       password: createAdminDto.password,
       username: createAdminDto.username,
+      superAdmin: superUser,
     });
 
     return id;
+  }
+
+  findByUsernameOrEmail(usernameOrEmail: string) {
+    return this.adminRepo.findOne({
+      where: [{ username: usernameOrEmail }, { email: usernameOrEmail }],
+      select: {
+        id: true,
+        superAdmin: true,
+        email: true,
+        password: true,
+        username: true,
+      },
+    });
   }
 
   findAll() {
@@ -26,12 +40,16 @@ export class AdminsService {
   }
 
   findOne(id: string) {
-    return this.adminRepo.findOne({
+    this.adminRepo.findOne({
       where: {
         id,
       },
       select: {
         id: true,
+        superAdmin: true,
+        email: true,
+        password: true,
+        username: true,
       },
     });
   }
