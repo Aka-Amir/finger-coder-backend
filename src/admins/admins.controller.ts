@@ -17,6 +17,7 @@ import { UpdateAdminDto } from './dto/update-admin.dto';
 import { LoginAdminDto } from './dto/login-admin.dto';
 import { AuthGuard, AuthService } from '../core/auth';
 import { createHash } from 'crypto';
+import { TokenData } from 'src/core/decorators/token.decorator';
 
 @Controller('admins')
 export class AdminsController {
@@ -75,26 +76,49 @@ export class AdminsController {
 
   @Get()
   @UseGuards(AuthGuard)
-  findAll() {
+  findAll(@TokenData('superUser') superUser: boolean) {
+    if (!superUser) throw new ForbiddenException();
     return this.adminsService.findAll();
   }
 
   @Get(':id')
   @UseGuards(AuthGuard)
-  findOne(@Param('id') id: string) {
+  findOne(
+    @Param('id') id: string,
+    @TokenData('superUser') superUser: boolean,
+    @TokenData('id') adminID: string,
+  ) {
+    if (adminID !== id && !superUser) throw new ForbiddenException();
     return this.adminsService.findOne(id);
   }
 
   @Put(':id')
   @Patch(':id')
   @UseGuards(AuthGuard)
-  update(@Param('id') id: string, @Body() updateAdminDto: UpdateAdminDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateAdminDto: UpdateAdminDto,
+    @TokenData('superUser') superUser: boolean,
+    @TokenData('id') adminID: string,
+  ) {
+    if (adminID !== id && !superUser) throw new ForbiddenException();
+
+    if (updateAdminDto.password) {
+      updateAdminDto.password = createHash('MD5')
+        .update(updateAdminDto.password)
+        .digest('hex');
+    }
     return this.adminsService.update(id, updateAdminDto);
   }
 
   @Delete(':id')
   @UseGuards(AuthGuard)
-  remove(@Param('id') id: string) {
+  remove(
+    @Param('id') id: string,
+    @TokenData('superUser') superUser: boolean,
+    @TokenData('id') adminID: string,
+  ) {
+    if (adminID !== id && !superUser) throw new ForbiddenException();
     return this.adminsService.remove(id);
   }
 }
