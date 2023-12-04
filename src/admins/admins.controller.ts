@@ -9,12 +9,13 @@ import {
   ForbiddenException,
   Put,
   NotFoundException,
+  UseGuards,
 } from '@nestjs/common';
 import { AdminsService } from './admins.service';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
 import { LoginAdminDto } from './dto/login-admin.dto';
-import { AuthService } from '../core/auth';
+import { AuthGuard, AuthService } from '../core/auth';
 import { createHash } from 'crypto';
 
 @Controller('admins')
@@ -25,6 +26,7 @@ export class AdminsController {
   ) {}
 
   @Post()
+  @UseGuards(AuthGuard)
   create(@Body() createAdminDto: CreateAdminDto) {
     createAdminDto.password = createHash('MD5')
       .update(createAdminDto.password)
@@ -72,22 +74,26 @@ export class AdminsController {
   }
 
   @Get()
+  @UseGuards(AuthGuard)
   findAll() {
     return this.adminsService.findAll();
   }
 
   @Get(':id')
+  @UseGuards(AuthGuard)
   findOne(@Param('id') id: string) {
     return this.adminsService.findOne(id);
   }
 
   @Put(':id')
   @Patch(':id')
+  @UseGuards(AuthGuard)
   update(@Param('id') id: string, @Body() updateAdminDto: UpdateAdminDto) {
     return this.adminsService.update(id, updateAdminDto);
   }
 
   @Delete(':id')
+  @UseGuards(AuthGuard)
   remove(@Param('id') id: string) {
     return this.adminsService.remove(id);
   }

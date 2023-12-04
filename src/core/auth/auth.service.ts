@@ -24,7 +24,7 @@ export class AuthService<
 
   async validate(data: string): Promise<T | K> {
     return this.jwtService.verifyAsync(data, {
-      algorithms: ['HS512'],
+      algorithms: ['HS512', 'HS256'],
     });
   }
 }
