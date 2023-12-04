@@ -118,7 +118,11 @@ export class AdminsController {
     @TokenData('superUser') superUser: boolean,
     @TokenData('id') adminID: string,
   ) {
-    if (adminID !== id && !superUser) throw new ForbiddenException();
+    if (!superUser) throw new ForbiddenException();
+    if (adminID === id)
+      throw new ForbiddenException(
+        'Super user admin is not allowed to be removed',
+      );
     return this.adminsService.remove(id);
   }
 }
