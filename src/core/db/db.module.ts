@@ -8,7 +8,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       type: 'mariadb',
       host: 'localhost',
       port: 3306,
-      username: 'root',
+      username: 'admin',
       password: 'root',
       database: 'db_fingercoder',
       autoLoadEntities: true,

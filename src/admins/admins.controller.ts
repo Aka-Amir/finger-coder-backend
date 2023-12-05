@@ -17,7 +17,7 @@ import { UpdateAdminDto } from './dto/update-admin.dto';
 import { LoginAdminDto } from './dto/login-admin.dto';
 import { AuthGuard, AuthService } from '../core/auth';
 import { createHash } from 'crypto';
-import { TokenData } from 'src/core/decorators/token.decorator';
+import { TokenData } from '../core/decorators/token.decorator';
 
 @Controller('admins')
 export class AdminsController {

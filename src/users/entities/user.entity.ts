@@ -1,4 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Genders } from '../../core/types/enums/gender.enum';
+import { HowWeMet } from '../../core/types/enums/how-we-met.enum';
+import { Column, Entity, Generated, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class User {
@@ -16,6 +18,7 @@ export class User {
   @Column()
   lastName: string;
 
+  @Generated('uuid')
   @Column({
     unique: true,
   })
@@ -25,4 +28,18 @@ export class User {
     nullable: true,
   })
   about: string;
+
+  @Column({
+    type: 'enum',
+    enum: Genders,
+    default: Genders.Female,
+  })
+  gender: Genders;
+
+  @Column({
+    type: 'enum',
+    enum: HowWeMet,
+    default: HowWeMet.Others,
+  })
+  howWeMet: HowWeMet;
 }
