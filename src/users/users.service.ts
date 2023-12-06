@@ -11,13 +11,19 @@ export class UsersService {
     @InjectRepository(User) private readonly usersRepo: Repository<User>,
   ) {}
 
-  async create(createUserDto: CreateUserDto) {
+  async create(createUserDto: Omit<CreateUserDto, 'code'>) {
     const user = await this.usersRepo.save(createUserDto);
     return user;
   }
 
   findAll() {
     return this.usersRepo.find();
+  }
+
+  findByPhoneNumber(phoneNumber: string) {
+    return this.usersRepo.findOne({
+      where: { phoneNumber },
+    });
   }
 
   findOne(id: number) {

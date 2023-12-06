@@ -1,8 +1,15 @@
-import { IsEnum, IsNotEmpty } from 'class-validator';
+import { IsEnum, IsNotEmpty, MaxLength, MinLength } from 'class-validator';
 import { Genders } from '../../core/types/enums/gender.enum';
 import { HowWeMet } from '../../core/types/enums/how-we-met.enum';
 
 export class CreateUserDto {
+  @IsNotEmpty({
+    message: 'code_empty',
+  })
+  @MinLength(4)
+  @MaxLength(4)
+  code: string;
+
   @IsNotEmpty({
     message: 'phoneNumber_empty',
   })
