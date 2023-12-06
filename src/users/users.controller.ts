@@ -12,7 +12,6 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { TokenData } from 'src/core/decorators/token.decorator';
 import { TokenType } from 'src/core/types/enums/token-types.enum';
 import { AuthGuard, AuthService } from '../core/auth';
 import { randomCodeGenerator } from '../core/helpers/random-generator.helper';
