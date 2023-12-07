@@ -1,29 +1,38 @@
 import {
-  Controller,
-  Get,
-  Post,
+  BadRequestException,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
   ForbiddenException,
-  Put,
+  Get,
+  Headers,
+  Ip,
   NotFoundException,
+  Param,
+  Patch,
+  Post,
+  Put,
   UseGuards,
 } from '@nestjs/common';
+import { createHash } from 'crypto';
+import { TokenType } from 'src/core/types/enums/token-types.enum';
+import { AuthGuard, AuthService } from '../core/auth';
+import { TokenData } from '../core/decorators/token.decorator';
 import { AdminsService } from './admins.service';
 import { CreateAdminDto } from './dto/create-admin.dto';
-import { UpdateAdminDto } from './dto/update-admin.dto';
 import { LoginAdminDto } from './dto/login-admin.dto';
-import { AuthGuard, AuthService } from '../core/auth';
-import { createHash } from 'crypto';
-import { TokenData } from 'src/core/decorators/token.decorator';
+import { UpdateAdminDto } from './dto/update-admin.dto';
+import { IAdminAccessToken } from './types/admin-access-token.interface';
+import { IAdminRefreshToken } from './types/admin-refresh-token.interface';
 
 @Controller('admins')
 export class AdminsController {
   constructor(
     private readonly adminsService: AdminsService,
-    private readonly authService: AuthService,
+    private readonly authService: AuthService<
+      IAdminAccessToken,
+      IAdminRefreshToken
+    >,
   ) {}
 
   @Post()
@@ -36,7 +45,14 @@ export class AdminsController {
   }
 
   @Post('login')
-  async login(@Body() loginAdminDto: LoginAdminDto) {
+  async login(
+    @Body() loginAdminDto: LoginAdminDto,
+    @Ip() ip: string,
+    @Headers('User-Agent') client: string,
+  ) {
+    if (!ip || !client) {
+      throw new BadRequestException();
+    }
     loginAdminDto.password = createHash('MD5')
       .update(loginAdminDto.password)
       .digest('hex');
@@ -53,16 +69,17 @@ export class AdminsController {
 
     const accessToken = await this.authService.getAccessToken({
       id: model.id,
+      tokenType: TokenType.access,
       superUser: model.superAdmin,
       username: model.username,
-      password: model.password,
+      email: model.email,
     });
 
     const refreshToken = await this.authService.getRefreshToken({
       id: model.id,
-      superUser: model.superAdmin,
-      username: model.username,
-      password: model.password,
+      ip,
+      client,
+      tokenType: TokenType.refresh,
     });
 
     return {
