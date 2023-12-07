@@ -12,7 +12,10 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: Omit<CreateUserDto, 'code'>) {
-    const user = await this.usersRepo.save(createUserDto);
+    const user = await this.usersRepo.save({
+      ...createUserDto,
+      joinedAt: new Date(),
+    });
     return user;
   }
 

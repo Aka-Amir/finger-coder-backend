@@ -1,6 +1,12 @@
 import { Genders } from '../../core/types/enums/gender.enum';
 import { HowWeMet } from '../../core/types/enums/how-we-met.enum';
-import { Column, Entity, Generated, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Generated,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class User {
@@ -27,7 +33,7 @@ export class User {
   @Column({
     nullable: true,
   })
-  about: string;
+  about?: string;
 
   @Column({
     type: 'enum',
@@ -42,4 +48,12 @@ export class User {
     default: HowWeMet.Others,
   })
   howWeMet: HowWeMet;
+
+  @Column({
+    nullable: true,
+  })
+  email?: string;
+
+  @CreateDateColumn()
+  joinedAt: Date;
 }

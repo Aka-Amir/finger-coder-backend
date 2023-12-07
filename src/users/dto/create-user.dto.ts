@@ -36,4 +36,6 @@ export class CreateUserDto {
     message: 'gender_empty',
   })
   gender: Genders;
+
+  email?: string;
 }
