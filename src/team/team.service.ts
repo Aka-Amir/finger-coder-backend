@@ -1,0 +1,33 @@
+import { Injectable } from '@nestjs/common';
+import { CreateTeamDto } from './dto/create-team.dto';
+import { UpdateTeamDto } from './dto/update-team.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Team } from './entities/team.entity';
+import { Repository } from 'typeorm';
+
+@Injectable()
+export class TeamService {
+  constructor(
+    @InjectRepository(Team) private readonly repo: Repository<Team>,
+  ) {}
+
+  create(createTeamDto: CreateTeamDto) {
+    return this.repo.create(createTeamDto);
+  }
+
+  findAll() {
+    return this.repo.find();
+  }
+
+  findOne(id: number) {
+    return this.repo.findOne({ where: { id } });
+  }
+
+  update(id: number, updateTeamDto: UpdateTeamDto) {
+    return this.repo.update(id, updateTeamDto);
+  }
+
+  remove(id: number) {
+    return this.repo.delete(id);
+  }
+}
