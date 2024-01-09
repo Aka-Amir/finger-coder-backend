@@ -24,6 +24,6 @@ async function bootstrap() {
 
     Logger.verbose(`Admin created with ID: ${adminID}`, 'Fingercoder');
   }
-  await app.listen(3000);
+  await app.listen(3200);
 }
 bootstrap();

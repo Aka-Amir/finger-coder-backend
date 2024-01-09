@@ -9,6 +9,7 @@ import {
   BadRequestException,
   Query,
   UseGuards,
+  Put,
 } from '@nestjs/common';
 import { EventsService } from './events.service';
 import { UpdateEventDto } from './dto/update-event.dto';
@@ -43,6 +44,7 @@ export class EventsController {
   }
 
   @Patch(':id')
+  @Put(':id')
   @UseGuards(AuthGuard)
   update(@Param('id') id: string, @Body() updateEventDto: UpdateEventDto) {
     return this.eventsService.update(+id, updateEventDto);
