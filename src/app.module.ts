@@ -7,9 +7,10 @@ import { UsersModule } from './users/users.module';
 import { AdminsModule } from './admins/admins.module';
 import { EventsModule } from './events/events.module';
 import { TeamModule } from './team/team.module';
+import { MediaModule } from './media/media.module';
 
 @Module({
-  imports: [CoreModule, AdminsModule, UsersModule, EventsModule, TeamModule],
+  imports: [CoreModule, AdminsModule, UsersModule, EventsModule, TeamModule, MediaModule],
   controllers: [AppController],
   providers: [AppService],
 })
