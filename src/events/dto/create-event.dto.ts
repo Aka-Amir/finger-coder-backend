@@ -9,6 +9,9 @@ export class CreateEventDto {
   price: number;
 
   @IsNotEmpty()
+  posterPath: string;
+
+  @IsNotEmpty()
   title: string;
 
   @IsNotEmpty()

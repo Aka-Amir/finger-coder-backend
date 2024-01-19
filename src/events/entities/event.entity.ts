@@ -9,6 +9,9 @@ export class Event {
   title: string;
 
   @Column()
+  posterPath: string;
+
+  @Column()
   description: string;
 
   @Column({
