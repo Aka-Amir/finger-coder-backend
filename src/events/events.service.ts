@@ -17,6 +17,10 @@ export class EventsService {
     });
   }
 
+  count() {
+    return this.repo.count();
+  }
+
   findAll(from: number, to: number) {
     return this.repo.find({
       skip: from,
