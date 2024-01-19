@@ -3,13 +3,14 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   BadRequestException,
   Query,
   UseGuards,
   Put,
+  Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { EventsService } from './events.service';
 import { UpdateEventDto } from './dto/update-event.dto';
@@ -32,18 +33,24 @@ export class EventsController {
 
   @Get()
   findAll(@Query('from') from: string, @Query('to') to: string) {
-    if (Number.isNaN(+from) || Number.isNaN(+to)) {
-      throw new BadRequestException('Invalid range');
+    try {
+      if (Number.isNaN(+from) || Number.isNaN(+to)) {
+        throw new BadRequestException('Invalid range');
+      }
+      return this.eventsService.findAll(+from, +to);
+    } catch (e) {
+      console.log(e);
+      throw new NotFoundException();
     }
-    return this.eventsService.findAll(+from, +to);
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
+    Logger.log('Got event');
     return this.eventsService.findOne(+id);
   }
 
-  @Patch(':id')
+  // @Patch(':id')
   @Put(':id')
   @UseGuards(AuthGuard)
   update(@Param('id') id: string, @Body() updateEventDto: UpdateEventDto) {
