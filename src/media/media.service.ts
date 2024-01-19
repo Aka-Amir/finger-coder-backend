@@ -1,26 +1,71 @@
-import { Injectable } from '@nestjs/common';
-import { CreateMediaDto } from './dto/create-media.dto';
-import { UpdateMediaDto } from './dto/update-media.dto';
+import {
+  Inject,
+  Injectable,
+  OnModuleInit,
+  StreamableFile,
+} from '@nestjs/common';
+import { randomUUID } from 'crypto';
+import { mkdirSync, writeFile, existsSync, createReadStream, unlink } from 'fs';
+import { join } from 'path';
+import { Observable } from 'rxjs';
 
 @Injectable()
-export class MediaService {
-  create(createMediaDto: CreateMediaDto) {
-    return 'This action adds a new media';
+export class MediaService implements OnModuleInit {
+  constructor(@Inject('STATIC_PATH') private staticPath: string) {}
+
+  onModuleInit() {
+    if (!existsSync(this.staticPath)) mkdirSync(this.staticPath);
   }
 
-  findAll() {
-    return `This action returns all media`;
+  create(file: Express.Multer.File) {
+    return new Observable<{ path: string; fileName: string }>((observer) => {
+      const uuid = (
+        randomUUID({
+          disableEntropyCache: true,
+        }) as any
+      )
+        .replaceAll('-', '_')
+        .toString();
+      const extensions = file.originalname.split('.');
+      const fileType = extensions[extensions.length - 1];
+      const FILE_NAME = `${uuid}.${fileType}`;
+      const PATH = join(this.staticPath, FILE_NAME);
+
+      writeFile(PATH, file.buffer, (err) => {
+        if (err) {
+          observer.error(err);
+          observer.complete();
+          return;
+        }
+        observer.next({
+          path: PATH,
+          fileName: FILE_NAME,
+        });
+        observer.complete();
+      });
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} media`;
+  fileExists(path: string) {
+    return existsSync(join(this.staticPath, path));
   }
 
-  update(id: number, updateMediaDto: UpdateMediaDto) {
-    return `This action updates a #${id} media`;
+  removeFile(filePath: string) {
+    return new Observable((sub) => {
+      unlink(join(this.staticPath, filePath), (e) => {
+        if (e) {
+          sub.error(e);
+          sub.complete();
+          return;
+        }
+        sub.next(true);
+        sub.complete();
+      });
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} media`;
+  getFileStream(fileName: string) {
+    const fileStream = createReadStream(join(this.staticPath, fileName));
+    return new StreamableFile(fileStream);
   }
 }
