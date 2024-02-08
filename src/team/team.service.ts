@@ -11,8 +11,8 @@ export class TeamService {
     @InjectRepository(Team) private readonly repo: Repository<Team>,
   ) {}
 
-  create(createTeamDto: CreateTeamDto) {
-    return this.repo.create(createTeamDto);
+  async create(createTeamDto: CreateTeamDto) {
+    return await this.repo.save(createTeamDto);
   }
 
   findAll() {
@@ -28,6 +28,8 @@ export class TeamService {
   }
 
   remove(id: number) {
-    return this.repo.delete(id);
+    return this.repo
+      .delete(id)
+      .then((response) => ({ affected: response.affected }));
   }
 }

@@ -1,17 +1,17 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Post,
+  Put,
   UseGuards,
 } from '@nestjs/common';
-import { TeamService } from './team.service';
+import { AuthGuard } from 'src/core/auth';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { UpdateTeamDto } from './dto/update-team.dto';
-import { AuthGuard } from 'src/core/auth';
+import { TeamService } from './team.service';
 
 @Controller('team')
 export class TeamController {
@@ -33,7 +33,7 @@ export class TeamController {
     return this.teamService.findOne(+id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   @UseGuards(AuthGuard)
   update(@Param('id') id: string, @Body() updateTeamDto: UpdateTeamDto) {
     return this.teamService.update(+id, updateTeamDto);
