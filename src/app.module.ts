@@ -11,6 +11,7 @@ import { UsersModule } from './users/users.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { SponsersModule } from './sponsers/sponsers.module';
+import { PlansModule } from './plans/plans.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { SponsersModule } from './sponsers/sponsers.module';
       rootPath: join(__dirname, 'public'),
     }),
     SponsersModule,
+    PlansModule,
   ],
   controllers: [AppController],
   providers: [AppService],
