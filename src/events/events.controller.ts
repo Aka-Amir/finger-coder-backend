@@ -8,8 +8,11 @@ import {
   Post,
   Put,
   Query,
+  Redirect,
+  Res,
   UseGuards,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { AuthGuard } from 'src/core/auth';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
@@ -27,6 +30,12 @@ export class EventsController {
     }
 
     return this.eventsService.create(createEventDto);
+  }
+
+  @Post('/pay')
+  pay(@Res() request: Response) {
+    request.setHeader('api-key', 'application/json');
+    request.redirect('http://localhost:3200/payments');
   }
 
   @Get()
