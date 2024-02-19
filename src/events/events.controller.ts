@@ -8,19 +8,20 @@ import {
   Post,
   Put,
   Query,
-  Redirect,
-  Res,
   UseGuards,
 } from '@nestjs/common';
-import { Response } from 'express';
 import { AuthGuard } from 'src/core/auth';
+import { ZibalSdkService } from 'src/core/sdk/zibal/zibal.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { EventsService } from './events.service';
 
 @Controller('events')
 export class EventsController {
-  constructor(private readonly eventsService: EventsService) {}
+  constructor(
+    private readonly eventsService: EventsService,
+    private readonly zibalSdk: ZibalSdkService,
+  ) {}
 
   @Post()
   @UseGuards(AuthGuard)
@@ -33,9 +34,11 @@ export class EventsController {
   }
 
   @Post('/pay')
-  pay(@Res() request: Response) {
-    request.setHeader('api-key', 'application/json');
-    request.redirect('http://localhost:3200/payments');
+  pay() {
+    this.zibalSdk.createLink();
+    return {
+      message: 'true',
+    };
   }
 
   @Get()
