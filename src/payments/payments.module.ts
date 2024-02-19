@@ -1,9 +1,8 @@
-import { DynamicModule, Module } from '@nestjs/common';
-import { PaymentsService } from './payments.service';
-import { PaymentsController } from './payments.controller';
-import { TransactionsModule } from './transactions/transactions.module';
-import { MERCHANT_ID_TOKEN_KEY, PAYMENT_GATEWAY } from './payment.consts';
 import { HttpModule } from '@nestjs/axios';
+import { DynamicModule, Module } from '@nestjs/common';
+import { MERCHANT_ID_TOKEN_KEY, PAYMENT_GATEWAY } from './payment.consts';
+import { PaymentsController } from './payments.controller';
+import { PaymentsService } from './payments.service';
 
 @Module({})
 export class PaymentsModule {
@@ -12,7 +11,6 @@ export class PaymentsModule {
       module: PaymentsModule,
       controllers: [PaymentsController],
       imports: [
-        TransactionsModule,
         HttpModule.register({
           baseURL: PAYMENT_GATEWAY,
         }),
