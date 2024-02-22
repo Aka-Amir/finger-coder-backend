@@ -35,7 +35,7 @@ export class EventsController {
 
   @Post('/pay')
   pay() {
-    this.zibalSdk.createLink();
+    // this.zibalSdk.createLink();
     return {
       message: 'true',
     };

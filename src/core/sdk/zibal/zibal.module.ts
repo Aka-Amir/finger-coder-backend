@@ -1,16 +1,28 @@
 import { DynamicModule } from '@nestjs/common';
-import { IZibalConfig } from './types/zibal-config.type';
+import {
+  IZibalConfig,
+  IZibalFeatureConfig,
+  ZibalCredentials,
+} from './types/zibal-config.type';
 import * as constants from './zibal.consts';
 import { ZibalSdkService } from './zibal.service';
+import { HttpModule } from '@nestjs/axios';
 
 export class ZibalSdkModule {
-  static forFeature(moduleScope: string): DynamicModule {
+  private static lazy: boolean;
+  static forFeature(featureConfig: IZibalFeatureConfig): DynamicModule {
+    featureConfig.lazy = ZibalSdkModule.lazy || featureConfig.lazy;
     return {
       module: ZibalSdkModule,
+      imports: [
+        HttpModule.register({
+          baseURL: `${constants.BASE_URL}/v1/`,
+        }),
+      ],
       providers: [
         {
-          useValue: moduleScope,
-          provide: constants.MODULE_SCOPE,
+          useValue: featureConfig,
+          provide: constants.FEATURE_CONFIG,
         },
         ZibalSdkService,
       ],
@@ -18,7 +30,13 @@ export class ZibalSdkModule {
     };
   }
 
-  static forRoot(config: IZibalConfig): DynamicModule {
+  static forRoot(credentials: ZibalCredentials): DynamicModule {
+    const config: IZibalConfig = {
+      credentials,
+      getGatewayURL: (trackId: number) =>
+        `${constants.BASE_URL}/start/${trackId}`,
+    };
+
     return {
       module: ZibalSdkModule,
       global: true,

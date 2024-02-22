@@ -12,7 +12,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { SponsersModule } from './sponsers/sponsers.module';
 import { PlansModule } from './plans/plans.module';
-import { ZibalSdkModule } from './core/sdk/zibal/zibal.module';
+import { ZibalSdkModule } from './core/sdk/zibal';
 
 @Module({
   imports: [
@@ -28,8 +28,9 @@ import { ZibalSdkModule } from './core/sdk/zibal/zibal.module';
     SponsersModule,
     PlansModule,
     ZibalSdkModule.forRoot({
-      merchantId: 'zibal',
+      merchant: 'zibal',
       callbackUrl: 'transactions/verify',
+      lazy: true,
     }),
   ],
   controllers: [AppController],

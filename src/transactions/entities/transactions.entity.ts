@@ -34,7 +34,10 @@ export class Transactions {
   })
   validationStage: ValidationStage;
 
-  trackID: string;
+  @Column({
+    type: 'number',
+  })
+  trackId: number;
 
   @CreateDateColumn({
     type: 'datetime',

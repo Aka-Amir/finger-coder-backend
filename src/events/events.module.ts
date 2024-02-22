@@ -10,7 +10,10 @@ import { ZibalSdkModule } from 'src/core/sdk/zibal/zibal.module';
   imports: [
     TypeOrmModule.forFeature([Event]),
     AuthModule,
-    ZibalSdkModule.forFeature('events'),
+    ZibalSdkModule.forFeature({
+      moduleScope: 'events',
+      lazy: true,
+    }),
   ],
   controllers: [EventsController],
   providers: [EventsService],
