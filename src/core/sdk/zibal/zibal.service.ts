@@ -21,9 +21,10 @@ export class ZibalSdkService {
   }
 
   createLink(data: IRequestForGateway) {
+    data.orderId = `${this.featureConf.moduleScope}#${data.orderId}`;
     return this.http
       .post<IGatewayResponse>(this.getRoute('request'), {
-        callbackUrl: this.config.credentials.callbackUrl,
+        callbackUrl: data.callBackUrl || this.config.credentials.callbackUrl,
         merchant: this.config.credentials.merchant,
         ...data,
       })

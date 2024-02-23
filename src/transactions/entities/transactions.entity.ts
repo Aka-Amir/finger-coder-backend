@@ -1,11 +1,11 @@
 import ValidationStage from '../types/validation-stage.enum';
 
 import {
-  Entity,
   Column,
+  CreateDateColumn,
+  Entity,
   Generated,
   PrimaryColumn,
-  CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
@@ -14,6 +14,9 @@ export class Transactions {
   @PrimaryColumn()
   @Generated('uuid')
   id: string;
+
+  @Column({})
+  orderId: string;
 
   @Column({
     nullable: true,
@@ -34,10 +37,8 @@ export class Transactions {
   })
   validationStage: ValidationStage;
 
-  @Column({
-    type: 'number',
-  })
-  trackId: number;
+  @Column()
+  trackId: string;
 
   @CreateDateColumn({
     type: 'datetime',

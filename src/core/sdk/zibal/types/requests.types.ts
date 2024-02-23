@@ -1,8 +1,8 @@
 export interface IRequestForGateway {
   amount: number;
-  callBackUrl: string;
+  callBackUrl?: string;
+  orderId: string;
   description?: string;
-  orderId?: string;
   mobile?: string;
   allowedCards?: string[];
   ledgerId?: string;

@@ -11,17 +11,13 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from 'src/core/auth';
-import { ZibalSdkService } from 'src/core/sdk/zibal/zibal.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { EventsService } from './events.service';
 
 @Controller('events')
 export class EventsController {
-  constructor(
-    private readonly eventsService: EventsService,
-    private readonly zibalSdk: ZibalSdkService,
-  ) {}
+  constructor(private readonly eventsService: EventsService) {}
 
   @Post()
   @UseGuards(AuthGuard)
@@ -33,9 +29,10 @@ export class EventsController {
     return this.eventsService.create(createEventDto);
   }
 
-  @Post('/pay')
-  pay() {
-    // this.zibalSdk.createLink();
+  @Get('/pay/:id')
+  async pay(@Param('id') id: string) {
+    const event = await this.eventsService.findOne(+id);
+
     return {
       message: 'true',
     };
