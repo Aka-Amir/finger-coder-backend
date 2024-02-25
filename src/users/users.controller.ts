@@ -47,13 +47,18 @@ export class UsersController {
     );
 
     const userKey = userKeyGenerator(data.phoneNumber, otpCode);
+    const userSign = !user.id
+      ? undefined
+      : userKeyGenerator(data.phoneNumber, user.id.toString());
 
     const accessToken = await this.authService.getAccessToken({
       client,
       ip,
+      id: user.id || undefined,
       userKey,
       phoneNumber: data.phoneNumber,
       tokenType: TokenType.commonUser,
+      userSign,
     });
 
     return {

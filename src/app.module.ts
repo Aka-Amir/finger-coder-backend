@@ -13,24 +13,35 @@ import { join } from 'path';
 import { SponsersModule } from './sponsers/sponsers.module';
 import { PlansModule } from './plans/plans.module';
 import { ZibalSdkModule } from './core/sdk/zibal';
+import { TransactionsModule } from './transactions/transactions.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      envFilePath: [
+        join(__dirname, '.env.dev'),
+        join(__dirname, '.env.prod'),
+        join(__dirname, '.env'),
+      ],
+      isGlobal: true,
+    }),
     CoreModule,
     AdminsModule,
     UsersModule,
     EventsModule,
     TeamModule,
     MediaModule,
+    TransactionsModule,
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, 'public'),
     }),
     SponsersModule,
     PlansModule,
     ZibalSdkModule.forRoot({
-      merchant: 'zibal',
-      callbackUrl: 'transactions/verify',
-      lazy: true,
+      merchant: process.env.MERCHANT_ID,
+      callbackUrl: `${process.env.PROTOCOL}://${process.env.HOST}/transactions/verify`,
+      lazy: false,
     }),
   ],
   controllers: [AppController],

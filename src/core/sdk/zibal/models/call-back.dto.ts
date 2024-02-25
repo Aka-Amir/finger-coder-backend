@@ -1,18 +1,13 @@
-import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
-import { StatusCode } from '../types/status-codes.enum';
+import { IsNotEmpty } from 'class-validator';
 
 export class CallBackResponseDTO {
   @IsNotEmpty()
   trackId: number;
 
   @IsNotEmpty()
-  success: 1 | 0;
+  success: '1' | '0';
 
-  @IsNotEmpty()
-  @IsString()
-  orderId: string;
-
-  @IsNotEmpty()
-  @IsEnum(StatusCode)
-  status: StatusCode;
+  orderId?: string;
+  cardNumber?: string;
+  hashedCardNumber?: string;
 }

@@ -1,22 +1,22 @@
+import { User } from 'src/users/entities/user.entity';
 import ValidationStage from '../types/validation-stage.enum';
 
 import {
   Column,
   CreateDateColumn,
   Entity,
-  Generated,
+  OneToOne,
   PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
 @Entity()
 export class Transactions {
+  /**
+   * @description id is trackId
+   */
   @PrimaryColumn()
-  @Generated('uuid')
-  id: string;
-
-  @Column({})
-  orderId: string;
+  id: string; // trackId
 
   @Column({
     nullable: true,
@@ -24,11 +24,11 @@ export class Transactions {
     transformer: {
       from: (value: string | undefined | null) =>
         !value ? null : JSON.parse(value),
-      to: (value: Record<string, unknown>) =>
+      to: (value: Record<string, any>) =>
         !value ? null : JSON.stringify(value),
     },
   })
-  metaData: Record<string, unknown> | null;
+  metaData: Record<string | number, any> | null;
 
   @Column({
     type: 'enum',
@@ -37,8 +37,8 @@ export class Transactions {
   })
   validationStage: ValidationStage;
 
-  @Column()
-  trackId: string;
+  @OneToOne(() => User, { cascade: true })
+  user: User | number;
 
   @CreateDateColumn({
     type: 'datetime',

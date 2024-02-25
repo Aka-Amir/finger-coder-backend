@@ -1,8 +1,8 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
 import { Logger, ValidationPipe } from '@nestjs/common';
-import { AdminsService } from './admins/admins.service';
+import { NestFactory } from '@nestjs/core';
 import { createHash } from 'crypto';
+import { AdminsService } from './admins/admins.service';
+import { AppModule } from './app.module';
 import { DatabaseInterceptor } from './core/interceptors/database.interceptor';
 
 async function bootstrap() {

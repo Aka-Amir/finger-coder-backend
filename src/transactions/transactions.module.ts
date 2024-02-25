@@ -15,8 +15,8 @@ export class TransactionsModule {
     return {
       module: TransactionsModule,
       imports: [TypeOrmModule.forFeature([Transactions])],
-      exports: [TransactionsService],
       providers: [TransactionsService],
+      exports: [TransactionsService],
     };
   }
 }

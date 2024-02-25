@@ -1,10 +1,10 @@
-import { Inject, Injectable } from '@nestjs/common';
-import * as constants from './zibal.consts';
-import { IZibalConfig, IZibalFeatureConfig } from './types/zibal-config.type';
 import { HttpService } from '@nestjs/axios';
+import { Inject, Injectable } from '@nestjs/common';
+import { map, tap } from 'rxjs';
 import { IRequestForGateway } from './types/requests.types';
 import { IGatewayResponse, IVerifyResponse } from './types/response.types';
-import { map } from 'rxjs';
+import { IZibalConfig, IZibalFeatureConfig } from './types/zibal-config.type';
+import * as constants from './zibal.consts';
 
 @Injectable()
 export class ZibalSdkService {
@@ -17,7 +17,15 @@ export class ZibalSdkService {
 
   private getRoute(route: string) {
     if (this.featureConf.lazy) return `${route}/lazy`;
-    return route;
+    return `v1/${route}`;
+  }
+
+  public getCallbackUrl(url: string) {
+    return `${process.env.PROTOCOL}://${process.env.HOST}/${url}`;
+  }
+
+  public getRawOrderId(orderId: string): string {
+    return orderId.replace(`${this.featureConf.moduleScope}#`, '');
   }
 
   createLink(data: IRequestForGateway) {
@@ -28,7 +36,13 @@ export class ZibalSdkService {
         merchant: this.config.credentials.merchant,
         ...data,
       })
-      .pipe(map((data) => data.data))
+      .pipe(
+        map(({ data: httpResponse, config }) => {
+          console.log(config.baseURL + config.url);
+          // console.log(httpResponse);
+          return httpResponse;
+        }),
+      )
       .pipe(
         map((response) => ({
           ...response,
@@ -38,9 +52,12 @@ export class ZibalSdkService {
   }
 
   verifyPayment(trackId: number) {
-    return this.http.post<IVerifyResponse>(this.getRoute('verify'), {
-      merchant: this.config.credentials.merchant,
-      trackId,
-    });
+    return this.http
+      .post<IVerifyResponse>(this.getRoute('verify'), {
+        merchant: this.config.credentials.merchant,
+        trackId,
+      })
+      .pipe(tap((item) => console.log(item.config.baseURL + item.config.url)))
+      .pipe(map(({ data }) => data));
   }
 }

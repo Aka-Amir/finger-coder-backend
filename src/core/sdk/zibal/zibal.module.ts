@@ -16,7 +16,7 @@ export class ZibalSdkModule {
       module: ZibalSdkModule,
       imports: [
         HttpModule.register({
-          baseURL: `${constants.BASE_URL}/v1/`,
+          baseURL: `${constants.BASE_URL}/`,
         }),
       ],
       providers: [

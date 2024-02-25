@@ -1,11 +1,59 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { Transactions } from './entities/transactions.entity';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { Transactions } from './entities/transactions.entity';
+import { TransactionConstruction } from './types/create-transaction.type';
+import ValidationStage from './types/validation-stage.enum';
 
 @Injectable()
 export class TransactionsService {
   constructor(
-    @Inject(Transactions)
+    @InjectRepository(Transactions)
     private readonly transactionsDb: Repository<Transactions>,
   ) {}
+
+  async createTransaction(data: TransactionConstruction) {
+    const transaction = await this.transactionsDb.save(data);
+    return {
+      id: transaction.id,
+    };
+  }
+
+  findById(id: string) {
+    return this.transactionsDb.findOne({
+      where: {
+        id,
+      },
+    });
+  }
+
+  async setMetaData(trackId: string, metaData: Record<string | number, any>) {
+    return await this.transactionsDb.update(trackId, {
+      metaData,
+    });
+  }
+
+  async changeTransactionValidationState(
+    transactionId: string,
+    state: ValidationStage,
+  ) {
+    const transaction = await this.transactionsDb.findOne({
+      where: {
+        id: transactionId,
+      },
+    });
+
+    if (!transaction) {
+      throw new NotFoundException();
+    }
+
+    const updateResponse = await this.transactionsDb.update(transactionId, {
+      validationStage: state,
+    });
+
+    return {
+      transaction,
+      updateResponse,
+    };
+  }
 }

@@ -1,20 +1,25 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { lastValueFrom } from 'rxjs';
+import { CallBackResponseDTO, ZibalSdkService } from 'src/core/sdk/zibal';
+import { TransactionsService } from 'src/transactions/transactions.service';
+import ValidationStage from 'src/transactions/types/validation-stage.enum';
+import { Repository } from 'typeorm';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
-import { InjectRepository } from '@nestjs/typeorm';
 import { Event } from './entities/event.entity';
-import { Repository } from 'typeorm';
-import { ZibalSdkService } from 'src/core/sdk/zibal';
-import { lastValueFrom } from 'rxjs';
-import { TransactionsService } from 'src/transactions/transactions.service';
+import { EventsPayment } from './entities/events-payment.entity';
 
 @Injectable()
 export class EventsService {
   constructor(
     @InjectRepository(Event) private readonly repo: Repository<Event>,
+    @InjectRepository(EventsPayment)
+    private readonly paymentRepo: Repository<EventsPayment>,
     private readonly zibalSdk: ZibalSdkService,
     private readonly transactionsService: TransactionsService,
   ) {}
+
   create(createEventDto: CreateEventDto) {
     return this.repo.save({
       ...createEventDto,
@@ -22,19 +27,61 @@ export class EventsService {
     });
   }
 
-  async pay(id: number) {
+  async pay(id: number, user: number, callBaclUrl = 'events/confirm') {
     const event = await this.findOne(id);
     const priceIRR = event.price * 10;
     const payment = await lastValueFrom(
       this.zibalSdk.createLink({
         amount: priceIRR,
-        orderId: id.toString(),
+        orderId: event.id.toString(),
+        callBackUrl: this.zibalSdk.getCallbackUrl(callBaclUrl),
       }),
     );
+
+    await this.transactionsService.createTransaction({
+      id: payment.trackId.toString(),
+      user: user,
+    });
 
     return {
       url: payment.gatewayUrl,
       trackId: payment.trackId,
+    };
+  }
+
+  async confirmPayment(verifyResponse: CallBackResponseDTO) {
+    const response =
+      await this.transactionsService.changeTransactionValidationState(
+        verifyResponse.trackId.toString(),
+        verifyResponse.success === '1'
+          ? ValidationStage.SUCCESS
+          : ValidationStage.FAILED,
+      );
+
+    const eventId = +this.zibalSdk.getRawOrderId(verifyResponse.orderId);
+
+    if (Number.isNaN(eventId)) {
+      throw new BadRequestException('Invalid orderID');
+    }
+
+    const { id: paymentId } = await this.paymentRepo.save({
+      transaction: response.transaction.id,
+      user: response.transaction.user as number,
+    });
+
+    const verificationResponse = await lastValueFrom(
+      this.zibalSdk.verifyPayment(+response.transaction.id),
+    );
+
+    console.log(verificationResponse);
+
+    await this.transactionsService.setMetaData(
+      response.transaction.id,
+      verificationResponse,
+    );
+
+    return {
+      paymentId,
     };
   }
 
