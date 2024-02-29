@@ -16,13 +16,17 @@ import { map } from 'rxjs';
 import { AuthGuard } from '../core/auth';
 import { MediaService } from './media.service';
 import { MediaGuard } from './media.guard';
+import { AccessGuard } from 'src/core/guards/access.guard';
+import { Access } from 'src/core/decorators/access.decorator';
+import { TokenType } from 'src/core/types/enums/token-types.enum';
 
+@Access(TokenType.access)
 @Controller('media')
 export class MediaController {
   constructor(private readonly mediaService: MediaService) {}
 
   @Post()
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, AccessGuard)
   @UseInterceptors(FileInterceptor('file'))
   create(
     @UploadedFile(
@@ -47,7 +51,7 @@ export class MediaController {
   }
 
   @Delete(':file')
-  @UseGuards(AuthGuard, new MediaGuard('file'))
+  @UseGuards(AuthGuard, AccessGuard, new MediaGuard('file'))
   async delete(@Param('file') file: string) {
     try {
       return this.mediaService.removeFile(file);
