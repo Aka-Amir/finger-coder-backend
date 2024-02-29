@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   Param,
   Post,
@@ -18,6 +19,7 @@ import { EventsService } from './events.service';
 import { AccessGuard } from 'src/core/guards/access.guard';
 import { Access } from 'src/core/decorators/access.decorator';
 import { TokenType } from 'src/core/types/enums/token-types.enum';
+import { createHash } from 'crypto';
 
 @Controller('events')
 export class EventsController {
@@ -39,8 +41,14 @@ export class EventsController {
   @UseGuards(AuthGuard, AccessGuard)
   async pay(@Param('id') id: string, @TokenData('id') userId: string) {
     try {
-      // TODO: Add transaction hash
-      return this.eventsService.pay(+id, +userId, `events/${id}/confirm`);
+      const transactionHash = createHash('md5')
+        .update(process.env.SECRET_KEY + id.toString())
+        .digest('hex');
+      return this.eventsService.pay(
+        +id,
+        +userId,
+        `events/${id}/${transactionHash}/confirm`,
+      );
     } catch (e) {
       console.log(e);
     }
@@ -72,13 +80,19 @@ export class EventsController {
   // return { message: true }; //this.eventsService.confirmPayment(body);
   // }
 
-  @Get(':id/confirm')
+  @Get(':id/:hash/confirm')
   confirmPaymentGet(
+    @Param('id') eventId: string,
+    @Param('hash') hash: string,
     @Query('success') success: '0' | '1',
     @Query('trackId') trackId: string,
     @Query('orderId') orderId: string,
   ) {
     try {
+      const transactionHash = createHash('md5')
+        .update(process.env.SECRET_KEY + eventId)
+        .digest('hex');
+      if (transactionHash !== hash) throw new ForbiddenException();
       return this.eventsService.confirmPayment({
         success,
         trackId: +trackId,
