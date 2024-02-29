@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from 'src/core/auth';
+import { ZibalSdkModule } from 'src/core/sdk/zibal/zibal.module';
+import { TransactionsModule } from 'src/transactions/transactions.module';
 import { Event } from './entities/event.entity';
 import { EventsPayment } from './entities/events-payment.entity';
 import { EventsController } from './events.controller';
 import { EventsService } from './events.service';
-import { ZibalSdkModule } from 'src/core/sdk/zibal/zibal.module';
-import { TransactionsModule } from 'src/transactions/transactions.module';
 
 @Module({
   imports: [

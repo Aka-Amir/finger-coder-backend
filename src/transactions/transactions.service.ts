@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Transactions } from './entities/transactions.entity';
@@ -13,9 +18,14 @@ export class TransactionsService {
   ) {}
 
   async createTransaction(data: TransactionConstruction) {
-    const transaction = await this.transactionsDb.save(data);
+    Logger.debug(`User : ${data.user}`, TransactionsService.name);
+    await this.transactionsDb.insert({
+      user: data.user,
+      id: data.id,
+      metaData: data.metaData,
+    });
     return {
-      id: transaction.id,
+      id: data.id,
     };
   }
 
@@ -41,10 +51,18 @@ export class TransactionsService {
       where: {
         id: transactionId,
       },
+      select: ['id', 'metaData', 'user', 'validationStage'],
+      relations: {
+        user: true,
+      },
     });
 
     if (!transaction) {
       throw new NotFoundException();
+    }
+
+    if (transaction.validationStage !== ValidationStage.IN_PROGRESS) {
+      throw new BadRequestException('T_SEALED');
     }
 
     const updateResponse = await this.transactionsDb.update(transactionId, {

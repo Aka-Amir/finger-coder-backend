@@ -11,12 +11,10 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from 'src/core/auth';
+import { TokenData } from 'src/core/decorators/token.decorator';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { EventsService } from './events.service';
-import { TokenData } from 'src/core/decorators/token.decorator';
-import { CallBackResponseDTO } from 'src/core/sdk/zibal';
-import { TreeRepositoryUtils } from 'typeorm';
 
 @Controller('events')
 export class EventsController {
@@ -38,7 +36,7 @@ export class EventsController {
     try {
       return this.eventsService.pay(+id, +userId, `events/${id}/confirm`);
     } catch (e) {
-      console.log('hi');
+      console.log(e);
     }
   }
 
@@ -55,6 +53,12 @@ export class EventsController {
     return this.eventsService.findOne(+id);
   }
 
+  @Get(':id/payments')
+  @UseGuards(AuthGuard)
+  findPayments(@Param('id') id: string) {
+    return this.eventsService.getAllPayments(+id);
+  }
+
   // @Post('confirm')
   // confirmPayment(@Body() body: CallBackResponseDTO) {
   // console.log('IM HERE');
@@ -67,9 +71,7 @@ export class EventsController {
     @Query('trackId') trackId: string,
     @Query('orderId') orderId: string,
   ) {
-    console.log('HEllo wol');
     try {
-      console.log(success, trackId, orderId);
       return this.eventsService.confirmPayment({
         success,
         trackId: +trackId,

@@ -1,9 +1,14 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { lastValueFrom } from 'rxjs';
 import { CallBackResponseDTO, ZibalSdkService } from 'src/core/sdk/zibal';
 import { TransactionsService } from 'src/transactions/transactions.service';
 import ValidationStage from 'src/transactions/types/validation-stage.enum';
+import { User } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
@@ -49,6 +54,20 @@ export class EventsService {
     };
   }
 
+  async getAllPayments(eventId: number) {
+    return this.paymentRepo.find({
+      where: {
+        event: eventId,
+      },
+      select: ['id', 'transaction', 'event', 'user'],
+      relations: {
+        event: true,
+        transaction: true,
+        user: true,
+      },
+    });
+  }
+
   async confirmPayment(verifyResponse: CallBackResponseDTO) {
     const response =
       await this.transactionsService.changeTransactionValidationState(
@@ -64,10 +83,23 @@ export class EventsService {
       throw new BadRequestException('Invalid orderID');
     }
 
-    const { id: paymentId } = await this.paymentRepo.save({
+    console.log({
       transaction: response.transaction.id,
-      user: response.transaction.user as number,
+      user: response.transaction.user,
+      event: eventId,
     });
+
+    if (!response.transaction.user) {
+      throw new InternalServerErrorException('U_UND');
+    }
+
+    const { raw } = await this.paymentRepo.insert({
+      transaction: response.transaction.id.toString(),
+      user: (response.transaction.user as User).id,
+      event: eventId,
+    });
+
+    console.log(raw);
 
     const verificationResponse = await lastValueFrom(
       this.zibalSdk.verifyPayment(+response.transaction.id),
@@ -81,7 +113,7 @@ export class EventsService {
     );
 
     return {
-      paymentId,
+      message: 'success',
     };
   }
 

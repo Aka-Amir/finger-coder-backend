@@ -5,7 +5,8 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  OneToOne,
+  JoinColumn,
+  ManyToOne,
   PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -37,7 +38,8 @@ export class Transactions {
   })
   validationStage: ValidationStage;
 
-  @OneToOne(() => User, { cascade: true })
+  @JoinColumn({ name: 'userId' })
+  @ManyToOne(() => User, (u) => u.id, { cascade: true, nullable: false })
   user: User | number;
 
   @CreateDateColumn({
