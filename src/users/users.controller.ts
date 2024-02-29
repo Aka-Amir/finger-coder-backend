@@ -1,5 +1,6 @@
 import {
   Body,
+  ConflictException,
   Controller,
   Delete,
   Get,
@@ -22,6 +23,8 @@ import { userKeyGenerator } from './helpers/user-key-generator.helper';
 import { IUserToken } from './types/user-token.interface';
 import { UserKeyGuard } from './user-key.guard';
 import { UsersService } from './users.service';
+import { TokenData } from 'src/core/decorators/token.decorator';
+import { OtpVerifyDto } from './dto/otp-verify.dto';
 
 @Controller('users')
 export class UsersController {
@@ -57,7 +60,7 @@ export class UsersController {
       id: user.id || undefined,
       userKey,
       phoneNumber: data.phoneNumber,
-      tokenType: TokenType.commonUser,
+      tokenType: TokenType.otpCode,
       userSign,
     });
 
@@ -68,18 +71,45 @@ export class UsersController {
     };
   }
 
+  @Post('verfiy')
+  @UseGuards(AuthGuard, new UserKeyGuard<OtpVerifyDto>('phoneNumber', 'code'))
+  async verfiy(@TokenData() token: IUserToken) {
+    delete (token as any).exp;
+    delete (token as any).iat;
+    const accessToken = await this.authService.getAccessToken({
+      ...token,
+      tokenType: TokenType.commonUser,
+    });
+
+    return {
+      accessToken,
+    };
+  }
+
   @Post()
   @UseGuards(AuthGuard, new UserKeyGuard<CreateUserDto>('phoneNumber', 'code'))
   async create(
     @Body() createUserDto: CreateUserDto,
-    // @TokenData() token: IUserToken,
+    @TokenData() token: IUserToken,
   ) {
+    if (token.id) {
+      throw new ConflictException();
+    }
     delete createUserDto.code;
+
     const user = await this.usersService.create(createUserDto);
 
+    delete (token as any).exp;
+    delete (token as any).iat;
+    const accessToken = await this.authService.getAccessToken({
+      ...token,
+      tokenType: TokenType.commonUser,
+    });
+
     return {
-      code: 'CODE_SENT',
+      code: 'USER_LOGGED_IN',
       user,
+      accessToken,
     };
   }
 
