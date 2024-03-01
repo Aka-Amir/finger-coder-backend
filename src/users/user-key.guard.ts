@@ -28,7 +28,7 @@ export class UserKeyGuard<T extends object = Record<string, unknown>>
     const userKey = userKeyGenerator(phoneNumber, otpCode);
 
     if (token.userKey !== userKey) {
-      throw new ForbiddenException();
+      throw new ForbiddenException('INVALID_SIGN');
     }
 
     return true;

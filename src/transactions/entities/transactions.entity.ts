@@ -10,6 +10,7 @@ import {
   PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { OfferCode } from 'src/offer-codes/entities/offer-code.entity';
 
 @Entity()
 export class Transactions {
@@ -30,6 +31,10 @@ export class Transactions {
     },
   })
   metaData: Record<string | number, any> | null;
+
+  @JoinColumn({ name: 'offerCode' })
+  @ManyToOne(() => OfferCode, (u) => u.id, { cascade: true, nullable: true })
+  offerCode: string | OfferCode;
 
   @Column({
     type: 'enum',

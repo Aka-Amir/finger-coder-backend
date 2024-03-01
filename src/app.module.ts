@@ -15,6 +15,7 @@ import { PlansModule } from './plans/plans.module';
 import { ZibalSdkModule } from './core/sdk/zibal';
 import { TransactionsModule } from './transactions/transactions.module';
 import { ConfigModule } from '@nestjs/config';
+import { OfferCodesModule } from './offer-codes/offer-codes.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { ConfigModule } from '@nestjs/config';
     EventsModule,
     TeamModule,
     MediaModule,
+    OfferCodesModule,
     TransactionsModule,
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, 'public'),

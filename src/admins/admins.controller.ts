@@ -24,8 +24,11 @@ import { LoginAdminDto } from './dto/login-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
 import { IAdminAccessToken } from './types/admin-access-token.interface';
 import { IAdminRefreshToken } from './types/admin-refresh-token.interface';
+import { Access } from 'src/core/decorators/access.decorator';
+import { AccessGuard } from 'src/core/guards/access.guard';
 
 @Controller('admins')
+@Access(TokenType.access)
 export class AdminsController {
   constructor(
     private readonly adminsService: AdminsService,
@@ -36,7 +39,7 @@ export class AdminsController {
   ) {}
 
   @Post()
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, AccessGuard)
   create(@Body() createAdminDto: CreateAdminDto) {
     createAdminDto.password = createHash('MD5')
       .update(createAdminDto.password)
@@ -92,14 +95,14 @@ export class AdminsController {
   }
 
   @Get()
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, AccessGuard)
   findAll(@TokenData('superUser') superUser: boolean) {
     if (!superUser) throw new ForbiddenException();
     return this.adminsService.findAll();
   }
 
   @Get(':id')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, AccessGuard)
   findOne(
     @Param('id') id: string,
     @TokenData('superUser') superUser: boolean,
@@ -111,7 +114,7 @@ export class AdminsController {
 
   @Put(':id')
   @Patch(':id')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, AccessGuard)
   update(
     @Param('id') id: string,
     @Body() updateAdminDto: UpdateAdminDto,
@@ -129,7 +132,7 @@ export class AdminsController {
   }
 
   @Delete(':id')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, AccessGuard)
   remove(
     @Param('id') id: string,
     @TokenData('superUser') superUser: boolean,

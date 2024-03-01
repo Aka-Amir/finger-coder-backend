@@ -7,12 +7,14 @@ import { Event } from './entities/event.entity';
 import { EventsPayment } from './entities/events-payment.entity';
 import { EventsController } from './events.controller';
 import { EventsService } from './events.service';
+import { OfferCodesModule } from 'src/offer-codes/offer-codes.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Event, EventsPayment]),
     TransactionsModule.forFeature(),
     AuthModule,
+    OfferCodesModule.forFeature(),
     ZibalSdkModule.forFeature({
       moduleScope: 'events',
       lazy: false,
