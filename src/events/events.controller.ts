@@ -39,7 +39,11 @@ export class EventsController {
   @Get('pay/:id')
   @Access(TokenType.access, TokenType.commonUser)
   @UseGuards(AuthGuard, AccessGuard)
-  async pay(@Param('id') id: string, @TokenData('id') userId: string) {
+  async pay(
+    @Param('id') id: string,
+    @TokenData('id') userId: string,
+    @Query('offer') offer?: string,
+  ) {
     try {
       const transactionHash = createHash('md5')
         .update(process.env.SECRET_KEY + id.toString())
@@ -47,6 +51,7 @@ export class EventsController {
       return this.eventsService.pay(
         +id,
         +userId,
+        offer,
         `events/${id}/${transactionHash}/confirm`,
       );
     } catch (e) {

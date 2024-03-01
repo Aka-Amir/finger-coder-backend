@@ -23,6 +23,7 @@ export class TransactionsService {
       user: data.user,
       id: data.id,
       metaData: data.metaData,
+      offerCode: data.offerCode,
     });
     return {
       id: data.id,

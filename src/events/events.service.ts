@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
@@ -14,6 +15,7 @@ import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { Event } from './entities/event.entity';
 import { EventsPayment } from './entities/events-payment.entity';
+import { OfferCodesService } from 'src/offer-codes/offer-codes.service';
 
 @Injectable()
 export class EventsService {
@@ -23,6 +25,7 @@ export class EventsService {
     private readonly paymentRepo: Repository<EventsPayment>,
     private readonly zibalSdk: ZibalSdkService,
     private readonly transactionsService: TransactionsService,
+    private readonly offersService: OfferCodesService,
   ) {}
 
   create(createEventDto: CreateEventDto) {
@@ -31,10 +34,45 @@ export class EventsService {
       startDate: new Date(createEventDto.startDate),
     });
   }
+  private calculateDiscount(price: number, discount: number): number {
+    const amount = price * (discount / 100);
+    return price - amount;
+  }
 
-  async pay(id: number, user: number, callBaclUrl = 'events/confirm') {
+  async pay(
+    id: number,
+    user: number,
+    offerCode?: string,
+    callBaclUrl = 'events/confirm',
+  ) {
     const event = await this.findOne(id);
-    const priceIRR = event.price * 10;
+
+    let priceIRR = event.price * 10;
+
+    if (Date.now() >= event.startDate.getTime()) {
+      throw new ForbiddenException('Time_exceeded');
+    }
+
+    if (!event.limit) {
+      throw new ForbiddenException('Reached limit');
+    }
+
+    if (event.discount) {
+      priceIRR = this.calculateDiscount(priceIRR, event.discount);
+    }
+
+    if (offerCode) {
+      const offer = await this.offersService.findOne(offerCode);
+      if (
+        (offer.user && (offer.user as User).id === user) ||
+        (offer.event && (offer.event as Event).id === id)
+      ) {
+        priceIRR = this.calculateDiscount(priceIRR, offer.amount);
+      } else {
+        throw new ForbiddenException('INVALID_OFFER_CODE');
+      }
+    }
+
     const payment = await lastValueFrom(
       this.zibalSdk.createLink({
         amount: priceIRR,
@@ -46,6 +84,7 @@ export class EventsService {
     await this.transactionsService.createTransaction({
       id: payment.trackId.toString(),
       user: user,
+      offerCode,
     });
 
     return {
@@ -83,29 +122,30 @@ export class EventsService {
       throw new BadRequestException('Invalid orderID');
     }
 
-    console.log({
-      transaction: response.transaction.id,
-      user: response.transaction.user,
-      event: eventId,
+    const { limit } = await this.repo.findOne({
+      where: {
+        id: eventId,
+      },
+      select: ['limit'],
+    });
+
+    await this.repo.update(eventId, {
+      limit: limit - 1,
     });
 
     if (!response.transaction.user) {
       throw new InternalServerErrorException('U_UND');
     }
 
-    const { raw } = await this.paymentRepo.insert({
+    await this.paymentRepo.insert({
       transaction: response.transaction.id.toString(),
       user: (response.transaction.user as User).id,
       event: eventId,
     });
 
-    console.log(raw);
-
     const verificationResponse = await lastValueFrom(
       this.zibalSdk.verifyPayment(+response.transaction.id),
     );
-
-    console.log(verificationResponse);
 
     await this.transactionsService.setMetaData(
       response.transaction.id,
