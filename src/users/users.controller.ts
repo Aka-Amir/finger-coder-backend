@@ -13,26 +13,29 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
+import { lastValueFrom } from 'rxjs';
+import { Access } from 'src/core/decorators/access.decorator';
+import { TokenData } from 'src/core/decorators/token.decorator';
+import { AccessGuard } from 'src/core/guards/access.guard';
+import { KavehnegarService } from 'src/core/sdk/kavehnegar/kavehnegar.service';
 import { TokenType } from 'src/core/types/enums/token-types.enum';
 import { AuthGuard, AuthService } from '../core/auth';
 import { randomCodeGenerator } from '../core/helpers/random-generator.helper';
 import { CreateUserDto } from './dto/create-user.dto';
+import { OtpVerifyDto } from './dto/otp-verify.dto';
 import { SendOtpDto } from './dto/send-otp.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { userKeyGenerator } from './helpers/user-key-generator.helper';
 import { IUserToken } from './types/user-token.interface';
 import { UserKeyGuard } from './user-key.guard';
 import { UsersService } from './users.service';
-import { TokenData } from 'src/core/decorators/token.decorator';
-import { OtpVerifyDto } from './dto/otp-verify.dto';
-import { Access } from 'src/core/decorators/access.decorator';
-import { AccessGuard } from 'src/core/guards/access.guard';
 
 @Controller('users')
 export class UsersController {
   constructor(
     private readonly authService: AuthService<IUserToken, IUserToken>,
     private readonly usersService: UsersService,
+    private readonly otpService: KavehnegarService,
   ) {}
 
   @Post('otp')
@@ -44,12 +47,6 @@ export class UsersController {
   ) {
     const user = await this.usersService.findByPhoneNumber(data.phoneNumber);
     const otpCode = randomCodeGenerator(4);
-
-    // TODO: send otp code to user
-    Logger.debug(
-      `[${otpCode}]::${user?.phoneNumber || data.phoneNumber}`,
-      UsersController.name,
-    );
 
     const userKey = userKeyGenerator(data.phoneNumber, otpCode);
     const userSign = !user.id
@@ -65,6 +62,21 @@ export class UsersController {
       tokenType: TokenType.otpCode,
       userSign,
     });
+
+    if (process.env.NODE_ENV === 'DEV') {
+      Logger.debug(
+        `${user.phoneNumber || data.phoneNumber} :: ${otpCode}`,
+        UsersController.name,
+      );
+    } else {
+      await lastValueFrom(
+        this.otpService.sendOtp({
+          code: otpCode,
+          phoneNumber: user.phoneNumber || data.phoneNumber,
+          templateId: process.env.OTP_TEMPLATE_ID,
+        }),
+      );
+    }
 
     return {
       code: 'CODE_SENT',
