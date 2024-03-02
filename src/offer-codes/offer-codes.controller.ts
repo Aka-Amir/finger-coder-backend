@@ -17,7 +17,7 @@ import { TokenType } from 'src/core/types/enums/token-types.enum';
 
 @Controller('offer-codes')
 @Access(TokenType.access)
-// @UseGuards(AuthGuard, AccessGuard)
+@UseGuards(AuthGuard, AccessGuard)
 export class OfferCodesController {
   constructor(private readonly offerCodesService: OfferCodesService) {}
 
@@ -41,6 +41,8 @@ export class OfferCodesController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.offerCodesService.remove(id);
+    return this.offerCodesService.remove(id).then((response) => ({
+      affected: response.affected,
+    }));
   }
 }
