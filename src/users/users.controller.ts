@@ -11,6 +11,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { lastValueFrom } from 'rxjs';
@@ -140,8 +141,14 @@ export class UsersController {
   @Get()
   @UseGuards(AuthGuard, AccessGuard)
   @Access(TokenType.access)
-  findAll() {
-    return this.usersService.findAll();
+  findAll(
+    @Query('fullName') fullName?: string,
+    @Query('phoneNumber') phoneNumber?: string,
+  ) {
+    return this.usersService.findAll({
+      fullName,
+      phoneNumber,
+    });
   }
 
   @Get(':id')

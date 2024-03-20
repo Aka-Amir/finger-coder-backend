@@ -10,7 +10,7 @@ import { CallBackResponseDTO, ZibalSdkService } from 'src/core/sdk/zibal';
 import { TransactionsService } from 'src/transactions/transactions.service';
 import ValidationStage from 'src/transactions/types/validation-stage.enum';
 import { User } from 'src/users/entities/user.entity';
-import { Repository } from 'typeorm';
+import { LessThan, Not, Repository } from 'typeorm';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { Event } from './entities/event.entity';
@@ -53,7 +53,7 @@ export class EventsService {
       throw new ForbiddenException('Time_exceeded');
     }
 
-    if (!event.limit) {
+    if (event.limit === 0) {
       throw new ForbiddenException('Reached limit');
     }
 
@@ -93,6 +93,14 @@ export class EventsService {
     };
   }
 
+  async getActiveEvents() {
+    return this.repo.find({
+      where: {
+        startDate: Not(LessThan(new Date())),
+      },
+    });
+  }
+
   async getAllPayments(eventId: number) {
     return this.paymentRepo.find({
       where: {
@@ -129,9 +137,11 @@ export class EventsService {
       select: ['limit'],
     });
 
-    await this.repo.update(eventId, {
-      limit: limit - 1,
-    });
+    if (limit !== undefined && limit !== null) {
+      await this.repo.update(eventId, {
+        limit: limit - 1,
+      });
+    }
 
     if (!response.transaction.user) {
       throw new InternalServerErrorException('U_UND');

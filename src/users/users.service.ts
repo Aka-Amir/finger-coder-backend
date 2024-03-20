@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Like, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
+import { FindType } from './types/find.type';
 
 @Injectable()
 export class UsersService {
@@ -19,8 +20,21 @@ export class UsersService {
     return user;
   }
 
-  findAll() {
-    return this.usersRepo.find();
+  findAll(findData: FindType) {
+    const query = [];
+
+    if (findData.fullName) {
+      query.push({ firstName: Like(`${findData.fullName}%`) });
+      query.push({ lastName: Like(`${findData.fullName}%`) });
+    }
+
+    if (findData.phoneNumber) {
+      query.push({ phoneNumber: Like(`${findData.phoneNumber}%`) });
+    }
+
+    return this.usersRepo.find({
+      where: query,
+    });
   }
 
   findByPhoneNumber(phoneNumber: string) {

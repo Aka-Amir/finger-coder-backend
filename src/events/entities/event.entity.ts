@@ -9,6 +9,15 @@ export class Event {
   title: string;
 
   @Column()
+  heading: string;
+
+  @Column()
+  place: string;
+
+  @Column()
+  lecturer: string;
+
+  @Column()
   posterPath: string;
 
   @Column()

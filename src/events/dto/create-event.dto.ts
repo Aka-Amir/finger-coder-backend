@@ -15,6 +15,15 @@ export class CreateEventDto {
   title: string;
 
   @IsNotEmpty()
+  lecturer: string;
+
+  @IsNotEmpty()
+  heading: string;
+
+  @IsNotEmpty()
+  place: string;
+
+  @IsNotEmpty()
   description: string;
 
   metaTags?: string[];

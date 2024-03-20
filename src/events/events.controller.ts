@@ -36,6 +36,11 @@ export class EventsController {
     return this.eventsService.create(createEventDto);
   }
 
+  @Get('active')
+  getActiveEvents() {
+    return this.eventsService.getActiveEvents();
+  }
+
   @Get('pay/:id')
   @Access(TokenType.access, TokenType.commonUser)
   @UseGuards(AuthGuard, AccessGuard)
