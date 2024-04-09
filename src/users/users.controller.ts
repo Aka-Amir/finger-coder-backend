@@ -50,14 +50,14 @@ export class UsersController {
     const otpCode = randomCodeGenerator(4);
 
     const userKey = userKeyGenerator(data.phoneNumber, otpCode);
-    const userSign = !user.id
+    const userSign = !user?.id
       ? undefined
       : userKeyGenerator(data.phoneNumber, user.id.toString());
 
     const accessToken = await this.authService.getAccessToken({
       client,
       ip,
-      id: user.id || undefined,
+      id: user?.id || undefined,
       userKey,
       phoneNumber: data.phoneNumber,
       tokenType: TokenType.otpCode,
@@ -66,14 +66,14 @@ export class UsersController {
 
     if (process.env.NODE_ENV === 'DEV') {
       Logger.debug(
-        `${user.phoneNumber || data.phoneNumber} :: ${otpCode}`,
+        `${user?.phoneNumber || data.phoneNumber} :: ${otpCode}`,
         UsersController.name,
       );
     } else {
       await lastValueFrom(
         this.otpService.sendOtp({
           code: otpCode,
-          phoneNumber: user.phoneNumber || data.phoneNumber,
+          phoneNumber: user?.phoneNumber || data.phoneNumber,
           templateId: process.env.OTP_TEMPLATE_ID,
         }),
       );
@@ -86,7 +86,7 @@ export class UsersController {
     };
   }
 
-  @Post('verfiy')
+  @Post('verify')
   @Access(TokenType.otpCode)
   @UseGuards(
     AuthGuard,
@@ -102,6 +102,7 @@ export class UsersController {
     });
 
     return {
+      code: 'USER_LOGGED_IN',
       accessToken,
     };
   }

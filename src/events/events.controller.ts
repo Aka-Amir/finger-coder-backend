@@ -9,6 +9,7 @@ import {
   Post,
   Put,
   Query,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from 'src/core/auth';
@@ -20,6 +21,7 @@ import { AccessGuard } from 'src/core/guards/access.guard';
 import { Access } from 'src/core/decorators/access.decorator';
 import { TokenType } from 'src/core/types/enums/token-types.enum';
 import { createHash } from 'crypto';
+import { response, Response } from 'express';
 
 @Controller('events')
 export class EventsController {
@@ -91,23 +93,30 @@ export class EventsController {
   // }
 
   @Get(':id/:hash/confirm')
-  confirmPaymentGet(
+  async confirmPaymentGet(
     @Param('id') eventId: string,
     @Param('hash') hash: string,
     @Query('success') success: '0' | '1',
     @Query('trackId') trackId: string,
     @Query('orderId') orderId: string,
+    @Res() resolver: Response,
   ) {
     try {
       const transactionHash = createHash('md5')
         .update(process.env.SECRET_KEY + eventId)
         .digest('hex');
       if (transactionHash !== hash) throw new ForbiddenException();
-      return this.eventsService.confirmPayment({
+      await this.eventsService.confirmPayment({
         success,
         trackId: +trackId,
         orderId,
       });
+
+      resolver.redirect(
+        success === '1'
+          ? process.env.SUCCESS_CALLBACK
+          : process.env.ERROR_CALLBACK,
+      );
     } catch (e) {
       console.log(e);
       throw e;
