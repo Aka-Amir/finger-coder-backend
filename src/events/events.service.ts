@@ -50,11 +50,17 @@ export class EventsService {
     let priceIRR = event.price * 10;
 
     if (Date.now() >= event.startDate.getTime()) {
-      throw new ForbiddenException('Time_exceeded');
+      throw new ForbiddenException('Time_exceeded'.toUpperCase());
     }
 
     if (event.limit === 0) {
-      throw new ForbiddenException('Reached limit');
+      throw new ForbiddenException('Reached_limit'.toUpperCase());
+    }
+
+    const registeration = await this.registeration(user, id);
+
+    if (Boolean(registeration)) {
+      throw new ForbiddenException('USER_REGISTERED');
     }
 
     if (event.discount) {
@@ -68,9 +74,10 @@ export class EventsService {
         (offer.event && (offer.event as Event).id === id)
       ) {
         priceIRR = this.calculateDiscount(priceIRR, offer.amount);
-      } else {
-        throw new ForbiddenException('INVALID_OFFER_CODE');
       }
+      // else {
+      //   throw new ForbiddenException('INVALID_OFFER_CODE');
+      // }
     }
 
     const payment = await lastValueFrom(
@@ -93,12 +100,37 @@ export class EventsService {
     };
   }
 
+  async registeration(userId: number, eventId: number): Promise<EventsPayment> {
+    return this.paymentRepo.findOne({
+      where: {
+        user: userId,
+        event: eventId,
+      },
+      select: {
+        transaction: true,
+      },
+    });
+  }
+
   async getActiveEvents() {
-    return this.repo.find({
+    let events = await this.repo.find({
       where: {
         startDate: Not(LessThan(new Date())),
       },
     });
+
+    if (!events.length) {
+      events = await this.repo.find({
+        take: 1,
+        order: {
+          startDate: {
+            direction: 'DESC',
+          },
+        },
+      });
+    }
+
+    return events;
   }
 
   async getAllPayments(eventId: number) {
@@ -172,9 +204,14 @@ export class EventsService {
   }
 
   findAll(from: number, to: number) {
-    return this.repo.find({
+    return this.repo.findAndCount({
       skip: from,
       take: to - from,
+      order: {
+        startDate: {
+          direction: 'DESC',
+        },
+      },
     });
   }
 

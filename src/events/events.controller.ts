@@ -12,16 +12,16 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
+import { createHash } from 'crypto';
+import { Response } from 'express';
 import { AuthGuard } from 'src/core/auth';
+import { Access } from 'src/core/decorators/access.decorator';
 import { TokenData } from 'src/core/decorators/token.decorator';
+import { AccessGuard } from 'src/core/guards/access.guard';
+import { TokenType } from 'src/core/types/enums/token-types.enum';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { EventsService } from './events.service';
-import { AccessGuard } from 'src/core/guards/access.guard';
-import { Access } from 'src/core/decorators/access.decorator';
-import { TokenType } from 'src/core/types/enums/token-types.enum';
-import { createHash } from 'crypto';
-import { response, Response } from 'express';
 
 @Controller('events')
 export class EventsController {
@@ -67,11 +67,15 @@ export class EventsController {
   }
 
   @Get()
-  findAll(@Query('from') from: string, @Query('to') to: string) {
+  async findAll(@Query('from') from: string, @Query('to') to: string) {
     if (Number.isNaN(+from) || Number.isNaN(+to)) {
       throw new BadRequestException('Invalid range');
     }
-    return this.eventsService.findAll(+from, +to);
+    const [events, count] = await this.eventsService.findAll(+from, +to);
+    return {
+      data: events,
+      count,
+    };
   }
 
   @Get(':id')
@@ -84,6 +88,14 @@ export class EventsController {
   @UseGuards(AuthGuard, AccessGuard)
   findPayments(@Param('id') id: string) {
     return this.eventsService.getAllPayments(+id);
+  }
+
+  @Get(':id/resgistration')
+  @Access(TokenType.commonUser)
+  @UseGuards(AuthGuard, AccessGuard)
+  getRegistration(@Param('id') id: string, @TokenData('id') userId: string) {
+    if (Number.isNaN(+id)) throw new BadRequestException();
+    return this.eventsService.registeration(+userId, +id);
   }
 
   // @Post('confirm')
@@ -113,9 +125,10 @@ export class EventsController {
       });
 
       resolver.redirect(
-        success === '1'
+        (success === '1'
           ? process.env.SUCCESS_CALLBACK
-          : process.env.ERROR_CALLBACK,
+          : process.env.ERROR_CALLBACK) +
+          `?status=${success}&trackId=${trackId}`,
       );
     } catch (e) {
       console.log(e);
