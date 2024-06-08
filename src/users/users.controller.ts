@@ -14,7 +14,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { lastValueFrom } from 'rxjs';
+import { lastValueFrom, map, mergeMap, tap, zip } from 'rxjs';
 import { Access } from 'src/core/decorators/access.decorator';
 import { TokenData } from 'src/core/decorators/token.decorator';
 import { AccessGuard } from 'src/core/guards/access.guard';
@@ -30,6 +30,7 @@ import { userKeyGenerator } from './helpers/user-key-generator.helper';
 import { IUserToken } from './types/user-token.interface';
 import { UserKeyGuard } from './user-key.guard';
 import { UsersService } from './users.service';
+import { HttpService } from '@nestjs/axios';
 
 @Controller('users')
 export class UsersController {
@@ -37,7 +38,58 @@ export class UsersController {
     private readonly authService: AuthService<IUserToken, IUserToken>,
     private readonly usersService: UsersService,
     private readonly otpService: KavehnegarService,
+    private readonly httpClient: HttpService,
   ) {}
+
+  @Get('github')
+  async githubAuth(@Query('code') code: string) {
+    return this.httpClient
+      .post(
+        'https://github.com/login/oauth/access_token',
+        {
+          code,
+          client_id: 'Ov23ctBC8lULWJpUEBcp',
+          client_secret: '033ab8c8330abcb82bcc4eac9aa00707155fd2f1',
+        },
+        {
+          headers: {
+            Accept: 'application/json',
+          },
+        },
+      )
+      .pipe(
+        mergeMap((data) => {
+          return zip(
+            this.httpClient
+              .get('https://api.github.com/user', {
+                headers: {
+                  Authorization: 'Bearer ' + data.data.access_token,
+                },
+                params: {
+                  access_token: data.data.access_token,
+                },
+              })
+              .pipe(
+                map((response) => response.data),
+                tap((data) => console.log(data)),
+              ),
+            this.httpClient
+              .get('https://api.github.com/user/emails', {
+                headers: {
+                  Authorization: 'Bearer ' + data.data.access_token,
+                },
+                params: {
+                  access_token: data.data.access_token,
+                },
+              })
+              .pipe(
+                map((response) => response.data),
+                tap((data) => console.log(data)),
+              ),
+          );
+        }),
+      );
+  }
 
   @Post('otp')
   @HttpCode(200)

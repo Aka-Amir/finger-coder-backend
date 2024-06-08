@@ -1,19 +1,8 @@
 import { Global, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-
+import { DatabaseConfig } from './db.conf';
 @Global()
 @Module({
-  imports: [
-    TypeOrmModule.forRoot({
-      type: process.env.NODE_ENV === 'DEV' ? 'mariadb' : 'mysql',
-      host: 'localhost',
-      port: 3306,
-      username: process.env.DB_USER || 'root',
-      password: process.env.DB_PASS || 'root',
-      database: process.env.DB_NAME || 'db_fingercoder',
-      autoLoadEntities: true,
-      synchronize: true,
-    }),
-  ],
+  imports: [TypeOrmModule.forRoot(DatabaseConfig)],
 })
 export class DbModule {}
