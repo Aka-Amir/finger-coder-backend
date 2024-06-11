@@ -20,7 +20,6 @@ import { TokenData } from 'src/core/decorators/token.decorator';
 import { AccessGuard } from 'src/core/guards/access.guard';
 import { KavehnegarService } from 'src/core/sdk/kavehnegar/kavehnegar.service';
 import { TokenType } from 'src/core/types/enums/token-types.enum';
-import { AuthGuard, AuthService } from '../core/auth';
 import { randomCodeGenerator } from '../core/helpers/random-generator.helper';
 import { CreateUserDto } from './dto/create-user.dto';
 import { OtpVerifyDto } from './dto/otp-verify.dto';
@@ -31,11 +30,13 @@ import { IUserToken } from './types/user-token.interface';
 import { UserKeyGuard } from './user-key.guard';
 import { UsersService } from './users.service';
 import { HttpService } from '@nestjs/axios';
+import { TokensService } from 'src/core/services/tokens';
+import { Public } from 'src/core/decorators/public.decorator';
 
 @Controller('users')
 export class UsersController {
   constructor(
-    private readonly authService: AuthService<IUserToken, IUserToken>,
+    private readonly authService: TokensService<IUserToken, IUserToken>,
     private readonly usersService: UsersService,
     private readonly otpService: KavehnegarService,
     private readonly httpClient: HttpService,
@@ -93,6 +94,7 @@ export class UsersController {
 
   @Post('otp')
   @HttpCode(200)
+  @Public()
   async sendOtpToUser(
     @Body() data: SendOtpDto,
     @Headers('user-agent') client: string,
@@ -140,11 +142,7 @@ export class UsersController {
 
   @Post('verify')
   @Access(TokenType.otpCode)
-  @UseGuards(
-    AuthGuard,
-    AccessGuard,
-    new UserKeyGuard<OtpVerifyDto>('phoneNumber', 'code'),
-  )
+  @UseGuards(AccessGuard, new UserKeyGuard<OtpVerifyDto>('phoneNumber', 'code'))
   async verfiy(@TokenData() token: IUserToken) {
     delete (token as any).exp;
     delete (token as any).iat;
@@ -162,7 +160,6 @@ export class UsersController {
   @Post()
   @Access(TokenType.otpCode)
   @UseGuards(
-    AuthGuard,
     AccessGuard,
     new UserKeyGuard<CreateUserDto>('phoneNumber', 'code'),
   )
@@ -192,7 +189,7 @@ export class UsersController {
   }
 
   @Get()
-  @UseGuards(AuthGuard, AccessGuard)
+  @UseGuards(AccessGuard)
   @Access(TokenType.access)
   findAll(
     @Query('fullName') fullName?: string,
@@ -205,21 +202,21 @@ export class UsersController {
   }
 
   @Get(':id')
-  @UseGuards(AuthGuard, AccessGuard)
+  @UseGuards(AccessGuard)
   @Access(TokenType.access)
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(+id);
   }
 
   @Patch(':id')
-  @UseGuards(AuthGuard, AccessGuard)
+  @UseGuards(AccessGuard)
   @Access(TokenType.access)
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(+id, updateUserDto);
   }
 
   @Delete(':id')
-  @UseGuards(AuthGuard, AccessGuard)
+  @UseGuards(AccessGuard)
   @Access(TokenType.access)
   remove(@Param('id') id: string) {
     return this.usersService.remove(+id);

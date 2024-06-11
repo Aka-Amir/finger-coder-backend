@@ -14,7 +14,6 @@ import {
 } from '@nestjs/common';
 import { createHash } from 'crypto';
 import { Response } from 'express';
-import { AuthGuard } from 'src/core/auth';
 import { Access } from 'src/core/decorators/access.decorator';
 import { TokenData } from 'src/core/decorators/token.decorator';
 import { AccessGuard } from 'src/core/guards/access.guard';
@@ -22,6 +21,7 @@ import { TokenType } from 'src/core/types/enums/token-types.enum';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { EventsService } from './events.service';
+import { Public } from 'src/core/decorators/public.decorator';
 
 @Controller('events')
 export class EventsController {
@@ -29,7 +29,7 @@ export class EventsController {
 
   @Post()
   @Access(TokenType.access)
-  @UseGuards(AuthGuard, AccessGuard)
+  @UseGuards(AccessGuard)
   create(@Body() createEventDto: CreateEventDto) {
     if (createEventDto.startDate <= Date.now()) {
       throw new BadRequestException('Invalid date');
@@ -39,13 +39,14 @@ export class EventsController {
   }
 
   @Get('active')
+  @Public()
   getActiveEvents() {
     return this.eventsService.getActiveEvents();
   }
 
   @Get('pay/:id')
   @Access(TokenType.access, TokenType.commonUser)
-  @UseGuards(AuthGuard, AccessGuard)
+  @UseGuards(AccessGuard)
   async pay(
     @Param('id') id: string,
     @TokenData('id') userId: string,
@@ -67,6 +68,7 @@ export class EventsController {
   }
 
   @Get()
+  @Public()
   async findAll(@Query('from') from: string, @Query('to') to: string) {
     if (Number.isNaN(+from) || Number.isNaN(+to)) {
       throw new BadRequestException('Invalid range');
@@ -79,20 +81,21 @@ export class EventsController {
   }
 
   @Get(':id')
+  @Public()
   findOne(@Param('id') id: string) {
     return this.eventsService.findOne(+id);
   }
 
   @Get(':id/payments')
   @Access(TokenType.access)
-  @UseGuards(AuthGuard, AccessGuard)
+  @UseGuards(AccessGuard)
   findPayments(@Param('id') id: string) {
     return this.eventsService.getAllPayments(+id);
   }
 
   @Get(':id/resgistration')
   @Access(TokenType.commonUser)
-  @UseGuards(AuthGuard, AccessGuard)
+  @UseGuards(AccessGuard)
   getRegistration(@Param('id') id: string, @TokenData('id') userId: string) {
     if (Number.isNaN(+id)) throw new BadRequestException();
     return this.eventsService.registeration(+userId, +id);
@@ -105,6 +108,7 @@ export class EventsController {
   // }
 
   @Get(':id/:hash/confirm')
+  @Public()
   async confirmPaymentGet(
     @Param('id') eventId: string,
     @Param('hash') hash: string,
@@ -139,14 +143,14 @@ export class EventsController {
   // @Patch(':id')
   @Put(':id')
   @Access(TokenType.access)
-  @UseGuards(AuthGuard, AccessGuard)
+  @UseGuards(AccessGuard)
   update(@Param('id') id: string, @Body() updateEventDto: UpdateEventDto) {
     return this.eventsService.update(+id, updateEventDto);
   }
 
   @Delete(':id')
   @Access(TokenType.access)
-  @UseGuards(AuthGuard, AccessGuard)
+  @UseGuards(AccessGuard)
   remove(@Param('id') id: string) {
     return this.eventsService.remove(+id);
   }

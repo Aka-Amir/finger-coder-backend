@@ -16,7 +16,6 @@ import {
 } from '@nestjs/common';
 import { createHash } from 'crypto';
 import { TokenType } from 'src/core/types/enums/token-types.enum';
-import { AuthGuard, AuthService } from '../core/auth';
 import { TokenData } from '../core/decorators/token.decorator';
 import { AdminsService } from './admins.service';
 import { CreateAdminDto } from './dto/create-admin.dto';
@@ -26,20 +25,22 @@ import { IAdminAccessToken } from './types/admin-access-token.interface';
 import { IAdminRefreshToken } from './types/admin-refresh-token.interface';
 import { Access } from 'src/core/decorators/access.decorator';
 import { AccessGuard } from 'src/core/guards/access.guard';
+import { Public } from 'src/core/decorators/public.decorator';
+import { TokensService } from 'src/core/services/tokens';
 
 @Controller('admins')
 @Access(TokenType.access)
 export class AdminsController {
   constructor(
     private readonly adminsService: AdminsService,
-    private readonly authService: AuthService<
+    private readonly authService: TokensService<
       IAdminAccessToken,
       IAdminRefreshToken
     >,
   ) {}
 
   @Post()
-  @UseGuards(AuthGuard, AccessGuard)
+  @UseGuards(AccessGuard)
   create(@Body() createAdminDto: CreateAdminDto) {
     createAdminDto.password = createHash('MD5')
       .update(createAdminDto.password)
@@ -48,6 +49,7 @@ export class AdminsController {
   }
 
   @Post('login')
+  @Public()
   async login(
     @Body() loginAdminDto: LoginAdminDto,
     @Ip() ip: string,
@@ -95,14 +97,14 @@ export class AdminsController {
   }
 
   @Get()
-  @UseGuards(AuthGuard, AccessGuard)
+  @UseGuards(AccessGuard)
   findAll(@TokenData('superUser') superUser: boolean) {
     if (!superUser) throw new ForbiddenException();
     return this.adminsService.findAll();
   }
 
   @Get(':id')
-  @UseGuards(AuthGuard, AccessGuard)
+  @UseGuards(AccessGuard)
   findOne(
     @Param('id') id: string,
     @TokenData('superUser') superUser: boolean,
@@ -114,7 +116,7 @@ export class AdminsController {
 
   @Put(':id')
   @Patch(':id')
-  @UseGuards(AuthGuard, AccessGuard)
+  @UseGuards(AccessGuard)
   update(
     @Param('id') id: string,
     @Body() updateAdminDto: UpdateAdminDto,
@@ -132,7 +134,7 @@ export class AdminsController {
   }
 
   @Delete(':id')
-  @UseGuards(AuthGuard, AccessGuard)
+  @UseGuards(AccessGuard)
   remove(
     @Param('id') id: string,
     @TokenData('superUser') superUser: boolean,

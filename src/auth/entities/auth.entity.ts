@@ -1,9 +1,25 @@
-import { Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class Auth {
   @PrimaryGeneratedColumn()
   id: number;
 
-  email: string;
+  @Column({
+    nullable: true,
+  })
+  email?: string;
+
+  @Column({
+    unique: true,
+  })
+  phoneNumber: string;
+
+  @CreateDateColumn()
+  joinedAt: Date;
 }

@@ -1,12 +1,12 @@
 import { Global, Module } from '@nestjs/common';
 import { join } from 'path';
-import { AuthModule } from './auth/auth.module';
 import { DbModule } from './db/db.module';
 import { AccessGuard } from './guards/access.guard';
+import { GuardsModule } from './guards/guards.module';
 
 @Global()
 @Module({
-  imports: [AuthModule, DbModule],
+  imports: [GuardsModule, DbModule],
   providers: [
     {
       provide: 'STATIC_PATH',

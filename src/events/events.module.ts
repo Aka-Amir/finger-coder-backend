@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthModule } from 'src/core/auth';
 import { ZibalSdkModule } from 'src/core/sdk/zibal/zibal.module';
 import { TransactionsModule } from 'src/transactions/transactions.module';
 import { Event } from './entities/event.entity';
@@ -13,7 +12,6 @@ import { OfferCodesModule } from 'src/offer-codes/offer-codes.module';
   imports: [
     TypeOrmModule.forFeature([Event, EventsPayment]),
     TransactionsModule.forFeature(),
-    AuthModule,
     OfferCodesModule.forFeature(),
     ZibalSdkModule.forFeature({
       moduleScope: 'events',

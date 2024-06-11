@@ -3,10 +3,9 @@ import { OfferCodesService } from './offer-codes.service';
 import { OfferCodesController } from './offer-codes.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { OfferCode } from './entities/offer-code.entity';
-import { AuthModule } from 'src/core/auth';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([OfferCode]), AuthModule],
+  imports: [TypeOrmModule.forFeature([OfferCode])],
   controllers: [OfferCodesController],
   providers: [OfferCodesService],
 })

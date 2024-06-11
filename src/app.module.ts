@@ -6,6 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { AdminsModule } from './admins/admins.module';
+import { AuthModule } from './auth/auth.module';
 import { CoreModule } from './core/core.module';
 import { KavehnegarModule } from './core/sdk/kavehnegar/kavehnegar.module';
 import { ZibalSdkModule } from './core/sdk/zibal';
@@ -17,7 +18,6 @@ import { SponsersModule } from './sponsers/sponsers.module';
 import { TeamModule } from './team/team.module';
 import { TransactionsModule } from './transactions/transactions.module';
 import { UsersModule } from './users/users.module';
-import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [

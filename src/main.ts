@@ -3,6 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { createHash } from 'crypto';
 import { AdminsService } from './admins/admins.service';
 import { AppModule } from './app.module';
+import { AuthGuard } from './core/guards/auth.guard';
 import { DatabaseInterceptor } from './core/interceptors/database.interceptor';
 
 async function bootstrap() {
@@ -10,6 +11,7 @@ async function bootstrap() {
   app.enableCors();
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalInterceptors(new DatabaseInterceptor());
+  app.useGlobalGuards(app.get(AuthGuard));
   const adminService = app.get<AdminsService>(AdminsService);
   const admins = await adminService.findAll();
   if (!admins.length) {

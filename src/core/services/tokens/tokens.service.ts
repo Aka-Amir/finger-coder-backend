@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { ITokenModel } from '../types/interfaces/tokens/token-model.interface';
+import { ITokenModel } from '../../types/interfaces/tokens/token-model.interface';
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export class AuthService<
+export class TokensService<
   TAccessToken extends ITokenModel = ITokenModel,
   TRefreshToken extends ITokenModel = ITokenModel,
 > {

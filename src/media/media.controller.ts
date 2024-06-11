@@ -13,12 +13,13 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { map } from 'rxjs';
-import { AuthGuard } from '../core/auth';
+
 import { MediaService } from './media.service';
 import { MediaGuard } from './media.guard';
 import { AccessGuard } from 'src/core/guards/access.guard';
 import { Access } from 'src/core/decorators/access.decorator';
 import { TokenType } from 'src/core/types/enums/token-types.enum';
+import { Public } from 'src/core/decorators/public.decorator';
 
 @Access(TokenType.access)
 @Controller('media')
@@ -26,7 +27,7 @@ export class MediaController {
   constructor(private readonly mediaService: MediaService) {}
 
   @Post()
-  @UseGuards(AuthGuard, AccessGuard)
+  @UseGuards(AccessGuard)
   @UseInterceptors(FileInterceptor('file'))
   create(
     @UploadedFile(
@@ -51,7 +52,7 @@ export class MediaController {
   }
 
   @Delete(':file')
-  @UseGuards(AuthGuard, AccessGuard, new MediaGuard('file'))
+  @UseGuards(AccessGuard, new MediaGuard('file'))
   async delete(@Param('file') file: string) {
     try {
       return this.mediaService.removeFile(file);
@@ -61,6 +62,7 @@ export class MediaController {
   }
 
   @Get(':file')
+  @Public()
   @UseGuards(new MediaGuard('file'))
   async getFile(@Param('file') file: string) {
     try {
