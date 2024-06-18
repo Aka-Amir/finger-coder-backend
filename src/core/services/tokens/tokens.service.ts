@@ -5,9 +5,9 @@ import { Injectable } from '@nestjs/common';
 @Injectable()
 export class TokensService<
   TAccessToken extends ITokenModel = ITokenModel,
-  TRefreshToken extends ITokenModel = ITokenModel,
+  TRefreshToken extends ITokenModel = TAccessToken,
 > {
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(private readonly jwtService: JwtService) { }
 
   async getAccessToken(data: TAccessToken): Promise<string> {
     return this.jwtService.signAsync(data, {

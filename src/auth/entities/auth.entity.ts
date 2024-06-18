@@ -2,13 +2,16 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Generated,
+  PrimaryColumn,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
 @Entity()
 export class Auth {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryColumn()
+  @Generated('uuid')
+  id: string;
 
   @Column({
     nullable: true,
