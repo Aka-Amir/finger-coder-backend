@@ -5,6 +5,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { Auth } from './entities/auth.entity';
 import { KavehnegarModule } from 'src/core/sdk/kavehnegar/kavehnegar.module';
+import { CoreAuth } from './services/core-auth.service';
 
 @Module({
   imports: [
@@ -13,6 +14,9 @@ import { KavehnegarModule } from 'src/core/sdk/kavehnegar/kavehnegar.module';
     KavehnegarModule.forFeature(),
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [
+    AuthService,
+    CoreAuth,
+  ],
 })
-export class AuthModule {}
+export class AuthModule { }
