@@ -9,8 +9,5 @@ export class AuthService {
   constructor(
     @InjectRepository(Auth) private readonly authRepo: Repository<Auth>,
     private readonly coreAuth: CoreAuth,
-  ) { }
-
-  public loginByOtp() {
-  }
+  ) {}
 }

@@ -14,9 +14,6 @@ import { CoreAuth } from './services/core-auth.service';
     KavehnegarModule.forFeature(),
   ],
   controllers: [AuthController],
-  providers: [
-    AuthService,
-    CoreAuth,
-  ],
+  providers: [AuthService, CoreAuth],
 })
-export class AuthModule { }
+export class AuthModule {}

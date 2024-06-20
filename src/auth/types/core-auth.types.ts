@@ -1,3 +1,6 @@
+import { Auth } from '../entities/auth.entity';
+
 export type OtpCodeResponse = {
-  accessToken: string,
-}
+  accessToken: string;
+  user: Auth | null;
+};

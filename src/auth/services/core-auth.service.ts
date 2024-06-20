@@ -28,22 +28,24 @@ export class CoreAuth extends BasicAuthServiceFactory {
   }
 
   private async sendCode(phoneNumber: string, code: string) {
-    if (process.env.NODE_ENV = 'DEV') {
-      Logger.debug(
-        `${phoneNumber} :: ${code}`,
-        CoreAuth.name
-      );
+    if ((process.env.NODE_ENV = 'DEV')) {
+      Logger.debug(`${phoneNumber} :: ${code}`, CoreAuth.name);
       return;
     }
 
-    await lastValueFrom(this.otpService.sendOtp({
-      code,
-      phoneNumber,
-      templateId: process.env.OTP_TEMPLATE_ID,
-    }))
+    await lastValueFrom(
+      this.otpService.sendOtp({
+        code,
+        phoneNumber,
+        templateId: process.env.OTP_TEMPLATE_ID,
+      }),
+    );
   }
 
-  public async sendOtpCode(payload: SendOtpDto, headerData: RequiredHeaderPayload): Promise<OtpCodeResponse> {
+  public async sendOtpCode(
+    payload: SendOtpDto,
+    headerData: RequiredHeaderPayload,
+  ): Promise<OtpCodeResponse> {
     const user = await this.findUserByPhoneNumber(payload.phoneNumber);
     const otpCode = randomCodeGenerator(4);
 
@@ -56,19 +58,24 @@ export class CoreAuth extends BasicAuthServiceFactory {
       tokenType: TokenType.otpCode,
       key,
       authType: AuthTypes.core,
-      id: user?.id || ''
+      id: user?.id || '',
     });
 
     await this.sendCode(payload.phoneNumber, otpCode);
 
     return {
       accessToken: token,
-    }
+      user,
+    };
   }
 
-  public async verifyOtpCode(headerData: RequiredHeaderPayload, token: string | IAuthToken, code: string) {
+  public async verifyOtpCode(
+    headerData: RequiredHeaderPayload,
+    token: string | IAuthToken,
+    code: string,
+  ) {
     if (typeof token === 'string') {
-      token = await this.tokensService.validate(token as string)
+      token = await this.tokensService.validate(token as string);
     }
 
     const expectedKey = userKeyGenerator(token.phoneNumber, code);
@@ -80,15 +87,40 @@ export class CoreAuth extends BasicAuthServiceFactory {
       throw new InvalidClientException();
     }
 
-    return await this.tokensService.getAccessToken({
-      authType: token.authType,
-      client: token.client,
-      id: token.id,
-      ip: token.ip,
-      key: token.key,
-      phoneNumber: token.phoneNumber,
+    let id: string | undefined = token.id;
+
+    if (!id) {
+      const response = await this.authRepo.save({
+        phoneNumber: token.phoneNumber,
+      });
+      id = response.id;
+    }
+
+    const newToken = await this.createAccessToken(
+      {
+        id,
+        phoneNumber: token.phoneNumber,
+      },
+      headerData,
+    );
+
+    return {
+      accessToken: newToken,
+    };
+  }
+
+  private createAccessToken(
+    user: Pick<Auth, 'phoneNumber' | 'id'>,
+    headerData: RequiredHeaderPayload,
+  ) {
+    return this.tokensService.getAccessToken({
+      authType: AuthTypes.core,
+      client: headerData.userAgent,
+      id: user.id,
+      ip: headerData.ip,
+      key: userKeyGenerator(user.phoneNumber, user.id),
+      phoneNumber: user.phoneNumber,
       tokenType: TokenType.commonUser,
     });
   }
-
 }

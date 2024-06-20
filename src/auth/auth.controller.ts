@@ -1,27 +1,25 @@
 import {
-  Headers,
   Body,
   Controller,
+  Headers,
   HttpCode,
-  Logger,
-  Post,
   Ip,
+  Post,
+  UseGuards,
 } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { KavehnegarService } from 'src/core/sdk/kavehnegar/kavehnegar.service';
-import { lastValueFrom } from 'rxjs';
-import { TokenType } from 'src/core/types/enums/token-types.enum';
 import { Public } from 'src/core/decorators/public.decorator';
-import { SendOtpDto } from 'src/users/dto/send-otp.dto';
-import { randomCodeGenerator } from 'src/core/helpers/random-generator.helper';
-import { userKeyGenerator } from 'src/users/helpers/user-key-generator.helper';
+import { TokenType } from 'src/core/types/enums/token-types.enum';
+import { SendOtpDto } from './dto/send-otp.dto';
+import { CoreAuth } from './services/core-auth.service';
+import { Access } from 'src/core/decorators/access.decorator';
+import { AccessGuard } from 'src/core/guards/access.guard';
+import { TokenData } from 'src/core/decorators/token.decorator';
+import { IAuthToken } from './types/auth-token.interface';
+import { VerifyOtpCodeDto } from './dto/verify-otp.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(
-    private readonly authService: AuthService,
-    private readonly otpService: KavehnegarService,
-  ) {}
+  constructor(private readonly coreAuthService: CoreAuth) {}
 
   @Post('otp')
   @HttpCode(200)
@@ -31,60 +29,40 @@ export class AuthController {
     @Headers('user-agent') client: string,
     @Ip() ip: string,
   ) {
-    const user = await this.usersService.findByPhoneNumber(data.phoneNumber);
-    const otpCode = randomCodeGenerator(4);
-
-    const userKey = userKeyGenerator(data.phoneNumber, otpCode);
-    const userSign = !user?.id
-      ? undefined
-      : userKeyGenerator(data.phoneNumber, user.id.toString());
-
-    const accessToken = await this.authService.getAccessToken({
-      client,
+    const response = await this.coreAuthService.sendOtpCode(data, {
       ip,
-      id: user?.id || undefined,
-      userKey,
-      phoneNumber: data.phoneNumber,
-      tokenType: TokenType.otpCode,
-      userSign,
+      userAgent: client,
     });
 
-    if (process.env.NODE_ENV === 'DEV') {
-      Logger.debug(
-        `${user?.phoneNumber || data.phoneNumber} :: ${otpCode}`,
-        UsersController.name,
-      );
-    } else {
-      await lastValueFrom(
-        this.otpService.sendOtp({
-          code: otpCode,
-          phoneNumber: user?.phoneNumber || data.phoneNumber,
-          templateId: process.env.OTP_TEMPLATE_ID,
-        }),
-      );
+    const loginOptions = [];
+
+    if (response.user.githubId) {
+      loginOptions.push('auth/github');
+    }
+
+    if (response.user.googleId) {
+      loginOptions.push('auth/google');
     }
 
     return {
-      code: 'CODE_SENT',
-      user,
-      accessToken,
+      token: response.accessToken,
+      loginOptions,
     };
   }
 
   @Post('verify')
   @Access(TokenType.otpCode)
-  @UseGuards(AccessGuard, new UserKeyGuard<OtpVerifyDto>('phoneNumber', 'code'))
-  async verfiy(@TokenData() token: IUserToken) {
-    delete (token as any).exp;
-    delete (token as any).iat;
-    const accessToken = await this.authService.getAccessToken({
-      ...token,
-      tokenType: TokenType.commonUser,
-    });
-
-    return {
-      code: 'USER_LOGGED_IN',
-      accessToken,
-    };
+  @UseGuards(AccessGuard)
+  async verfiy(
+    @Body() data: VerifyOtpCodeDto,
+    @TokenData() token: IAuthToken,
+    @Ip() ip: string,
+    @Headers('user-agent') client: string,
+  ) {
+    return this.coreAuthService.verifyOtpCode(
+      { ip, userAgent: client },
+      token,
+      data.code,
+    );
   }
 }

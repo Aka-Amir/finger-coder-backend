@@ -4,7 +4,6 @@ import {
   Entity,
   Generated,
   PrimaryColumn,
-  PrimaryGeneratedColumn,
 } from 'typeorm';
 
 @Entity()
@@ -22,6 +21,16 @@ export class Auth {
     unique: true,
   })
   phoneNumber: string;
+
+  @Column({
+    nullable: true,
+  })
+  googleId?: string;
+
+  @Column({
+    nullable: true,
+  })
+  githubId?: string;
 
   @CreateDateColumn()
   joinedAt: Date;
