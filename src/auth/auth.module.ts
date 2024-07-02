@@ -5,7 +5,9 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { Auth } from './entities/auth.entity';
 import { KavehnegarModule } from 'src/core/sdk/kavehnegar/kavehnegar.module';
-import { CoreAuth } from './services/core-auth.service';
+import { CoreAuthentication } from './services/core-auth.service';
+import { GithubAuthentication } from './services/github-auth.service';
+import { GoogleAuthentication } from './services/google-auth.service';
 
 @Module({
   imports: [
@@ -14,6 +16,11 @@ import { CoreAuth } from './services/core-auth.service';
     KavehnegarModule.forFeature(),
   ],
   controllers: [AuthController],
-  providers: [AuthService, CoreAuth],
+  providers: [
+    AuthService,
+    CoreAuthentication,
+    GithubAuthentication,
+    GoogleAuthentication,
+  ],
 })
 export class AuthModule {}

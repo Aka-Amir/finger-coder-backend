@@ -3,6 +3,7 @@ import { TokensService } from 'src/core/services/tokens';
 import { Repository } from 'typeorm';
 import { Auth } from '../entities/auth.entity';
 import { IAuthToken } from '../types/auth-token.interface';
+import { LoginOptions } from '../types/basic-auth.types';
 
 export abstract class BasicAuthServiceFactory {
   constructor(
@@ -18,6 +19,28 @@ export abstract class BasicAuthServiceFactory {
     });
 
     return response;
+  }
+
+  public static getLoginOptions(user: Auth | null): LoginOptions[] {
+    if (user === null) {
+      return [];
+    }
+
+    const loginOptions: LoginOptions[] = [];
+
+    if (user.githubId) {
+      loginOptions.push('auth/github');
+    }
+
+    if (user.googleId) {
+      loginOptions.push('auth/google');
+    }
+
+    if (user.phoneNumber) {
+      loginOptions.push('auth/otp');
+    }
+
+    return loginOptions;
   }
 
   protected findUserByEmail(email: string): Promise<Auth | null> {

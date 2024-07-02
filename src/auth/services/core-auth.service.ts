@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { lastValueFrom } from 'rxjs';
 import { randomCodeGenerator } from 'src/core/helpers/random-generator.helper';
@@ -18,10 +18,10 @@ import { OtpCodeResponse } from '../types/core-auth.types';
 import { BasicAuthServiceFactory } from './basic-auth-factory.service';
 
 @Injectable()
-export class CoreAuth extends BasicAuthServiceFactory {
+export class CoreAuthentication extends BasicAuthServiceFactory {
   constructor(
     private readonly otpService: KavehnegarService,
-    tokensService: TokensService<IAuthToken>,
+    @Inject(TokensService<IAuthToken>) tokensService: TokensService<IAuthToken>,
     @InjectRepository(Auth) authRepo: Repository<Auth>,
   ) {
     super(tokensService, authRepo);
@@ -29,7 +29,7 @@ export class CoreAuth extends BasicAuthServiceFactory {
 
   private async sendCode(phoneNumber: string, code: string) {
     if ((process.env.NODE_ENV = 'DEV')) {
-      Logger.debug(`${phoneNumber} :: ${code}`, CoreAuth.name);
+      Logger.debug(`${phoneNumber} :: ${code}`, CoreAuthentication.name);
       return;
     }
 
@@ -47,6 +47,7 @@ export class CoreAuth extends BasicAuthServiceFactory {
     headerData: RequiredHeaderPayload,
   ): Promise<OtpCodeResponse> {
     const user = await this.findUserByPhoneNumber(payload.phoneNumber);
+    const loginOptions = BasicAuthServiceFactory.getLoginOptions(user);
     const otpCode = randomCodeGenerator(4);
 
     const key = userKeyGenerator(payload.phoneNumber, otpCode);
@@ -66,6 +67,7 @@ export class CoreAuth extends BasicAuthServiceFactory {
     return {
       accessToken: token,
       user,
+      loginOptions,
     };
   }
 
