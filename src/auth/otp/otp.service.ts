@@ -1,35 +1,32 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { lastValueFrom } from 'rxjs';
 import { randomCodeGenerator } from 'src/core/helpers/random-generator.helper';
 import { KavehnegarService } from 'src/core/sdk/kavehnegar/kavehnegar.service';
 import { TokensService } from 'src/core/services/tokens';
 import { TokenType } from 'src/core/types/enums/token-types.enum';
 import { userKeyGenerator } from 'src/users/helpers/user-key-generator.helper';
-import { Repository } from 'typeorm';
-import { SendOtpDto } from '../dto/send-otp.dto';
-import { Auth } from '../entities/auth.entity';
-import { InvalidClientException } from '../errors/invalid-client.exception';
-import { InvalidOtpCodeException } from '../errors/invalid-code.exception';
-import { IAuthToken } from '../types/auth-token.interface';
-import { AuthTypes } from '../types/auth-types.enum';
-import { RequiredHeaderPayload } from '../types/basic-auth.types';
-import { OtpCodeResponse } from '../types/core-auth.types';
-import { BasicAuthServiceFactory } from './basic-auth-factory.service';
+import { AuthService } from '../auth.service';
+import { SendOtpDto } from './dto/send-otp.dto';
+import { Auth } from '../@shared/entities/auth.entity';
+import { InvalidClientException } from './errors/invalid-client.exception';
+import { InvalidOtpCodeException } from './errors/invalid-code.exception';
+import { IAuthToken } from '../@shared/types/auth-token.interface';
+import { AuthTypes } from '../@shared/types/auth-types.enum';
+import { RequiredHeaderPayload } from '../@shared/types/basic-auth.types';
+import { OtpCodeResponse } from './types/core-auth.types';
 
 @Injectable()
-export class CoreAuthentication extends BasicAuthServiceFactory {
+export class OtpService {
   constructor(
     private readonly otpService: KavehnegarService,
-    @Inject(TokensService<IAuthToken>) tokensService: TokensService<IAuthToken>,
-    @InjectRepository(Auth) authRepo: Repository<Auth>,
-  ) {
-    super(tokensService, authRepo);
-  }
+    @Inject(TokensService<IAuthToken>)
+    private tokensService: TokensService<IAuthToken>,
+    private readonly authService: AuthService,
+  ) {}
 
   private async sendCode(phoneNumber: string, code: string) {
     if ((process.env.NODE_ENV = 'DEV')) {
-      Logger.debug(`${phoneNumber} :: ${code}`, CoreAuthentication.name);
+      Logger.debug(`${phoneNumber} :: ${code}`, OtpService.name);
       return;
     }
 
@@ -46,8 +43,10 @@ export class CoreAuthentication extends BasicAuthServiceFactory {
     payload: SendOtpDto,
     headerData: RequiredHeaderPayload,
   ): Promise<OtpCodeResponse> {
-    const user = await this.findUserByPhoneNumber(payload.phoneNumber);
-    const loginOptions = BasicAuthServiceFactory.getLoginOptions(user);
+    const user = await this.authService.findUserByPhoneNumber(
+      payload.phoneNumber,
+    );
+    const loginOptions = AuthService.getLoginOptions(user);
     const otpCode = randomCodeGenerator(4);
 
     const key = userKeyGenerator(payload.phoneNumber, otpCode);
@@ -92,7 +91,7 @@ export class CoreAuthentication extends BasicAuthServiceFactory {
     let id: string | undefined = token.id;
 
     if (!id) {
-      const response = await this.authRepo.save({
+      const response = await this.authService.create({
         phoneNumber: token.phoneNumber,
       });
       id = response.id;

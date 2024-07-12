@@ -1,26 +1,16 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { TokensModule } from 'src/core/services/tokens';
+import { Auth } from './@shared/entities/auth.entity';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { Auth } from './entities/auth.entity';
-import { KavehnegarModule } from 'src/core/sdk/kavehnegar/kavehnegar.module';
-import { CoreAuthentication } from './services/core-auth.service';
-import { GithubAuthentication } from './services/github-auth.service';
-import { GoogleAuthentication } from './services/google-auth.service';
+import { OtpModule } from './otp/otp.module';
+import { GithubModule } from './github/github.module';
 
+@Global()
 @Module({
-  imports: [
-    TokensModule,
-    TypeOrmModule.forFeature([Auth]),
-    KavehnegarModule.forFeature(),
-  ],
+  imports: [TypeOrmModule.forFeature([Auth]), GithubModule, OtpModule],
   controllers: [AuthController],
-  providers: [
-    AuthService,
-    CoreAuthentication,
-    GithubAuthentication,
-    GoogleAuthentication,
-  ],
+  providers: [AuthService],
+  exports: [AuthService],
 })
 export class AuthModule {}

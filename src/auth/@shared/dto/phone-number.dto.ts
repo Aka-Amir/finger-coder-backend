@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsPhoneNumber } from 'class-validator';
 
-export class SendOtpDto {
+export class PhoneNumberDTO {
   @IsNotEmpty({
     message: 'phoneNumber_empty',
   })
