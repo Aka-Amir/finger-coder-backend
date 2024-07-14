@@ -4,15 +4,39 @@ import { Repository } from 'typeorm';
 import { PhoneNumberDTO } from './@shared/dto/phone-number.dto';
 import { Auth } from './@shared/entities/auth.entity';
 import { LoginOptions } from './@shared/types/basic-auth.types';
+import { OAuthID } from './@shared/entities/oauth-id.entity';
+import { OAuthProviders } from './@shared/types/oauth-providers';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(Auth) private readonly authRepo: Repository<Auth>,
+    @InjectRepository(OAuthID) private readonly oauthRepo: Repository<OAuthID>,
   ) {}
 
   public async create(user: Omit<Omit<Auth, 'id'>, 'joinedAt'>): Promise<Auth> {
     return this.authRepo.save(user);
+  }
+
+  public async linkAccount(
+    phoneNumber: string,
+    oauthID: string,
+    provider: OAuthProviders,
+  ) {
+    const { id } = await this.authRepo.findOne({
+      where: {
+        phoneNumber,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    return await this.oauthRepo.save({
+      provider,
+      authId: id,
+      id: oauthID,
+    });
   }
 
   public async findUserByPhoneNumber(phoneNumber: string): Promise<Auth> {
@@ -23,28 +47,6 @@ export class AuthService {
     });
 
     return response;
-  }
-
-  public static getLoginOptions(user: Auth | null): LoginOptions[] {
-    if (user === null) {
-      return [];
-    }
-
-    const loginOptions: LoginOptions[] = [];
-
-    if (user.githubId) {
-      loginOptions.push('auth/github');
-    }
-
-    if (user.googleId) {
-      loginOptions.push('auth/google');
-    }
-
-    if (user.phoneNumber) {
-      loginOptions.push('auth/otp');
-    }
-
-    return loginOptions;
   }
 
   public findUserByEmail(email: string): Promise<Auth | null> {
@@ -72,7 +74,16 @@ export class AuthService {
       },
     });
 
-    const loginOptions = AuthService.getLoginOptions(user);
+    const oauthIDs = await this.oauthRepo.find({
+      where: {
+        authId: user.id,
+      },
+      select: {
+        provider: true,
+      },
+    });
+
+    const loginOptions = oauthIDs.map((item) => item.provider as LoginOptions);
     if (!loginOptions.length) {
       loginOptions.push('auth/otp');
     }

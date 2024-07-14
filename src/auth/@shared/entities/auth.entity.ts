@@ -22,15 +22,15 @@ export class Auth {
   })
   phoneNumber: string;
 
-  @Column({
-    nullable: true,
-  })
-  googleId?: string;
+  // @Column({
+  //   nullable: true,
+  // })
+  // googleId?: string;
 
-  @Column({
-    nullable: true,
-  })
-  githubId?: string;
+  // @Column({
+  //   nullable: true,
+  // })
+  // githubId?: string;
 
   @CreateDateColumn()
   joinedAt: Date;

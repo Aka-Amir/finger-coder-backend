@@ -46,7 +46,6 @@ export class OtpService {
     const user = await this.authService.findUserByPhoneNumber(
       payload.phoneNumber,
     );
-    const loginOptions = AuthService.getLoginOptions(user);
     const otpCode = randomCodeGenerator(4);
 
     const key = userKeyGenerator(payload.phoneNumber, otpCode);
@@ -66,7 +65,6 @@ export class OtpService {
     return {
       accessToken: token,
       user,
-      loginOptions,
     };
   }
 
