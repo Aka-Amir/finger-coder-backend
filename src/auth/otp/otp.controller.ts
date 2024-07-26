@@ -38,7 +38,6 @@ export class OtpController {
 
     return {
       token: response.accessToken,
-      loginOptions: response.loginOptions,
     };
   }
 

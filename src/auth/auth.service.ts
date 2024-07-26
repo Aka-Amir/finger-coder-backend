@@ -3,8 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PhoneNumberDTO } from './@shared/dto/phone-number.dto';
 import { Auth } from './@shared/entities/auth.entity';
-import { LoginOptions } from './@shared/types/basic-auth.types';
 import { OAuthID } from './@shared/entities/oauth-id.entity';
+import { LoginOptions } from './@shared/types/basic-auth.types';
 import { OAuthProviders } from './@shared/types/oauth-providers';
 
 @Injectable()
@@ -14,7 +14,27 @@ export class AuthService {
     @InjectRepository(OAuthID) private readonly oauthRepo: Repository<OAuthID>,
   ) {}
 
-  public async create(user: Omit<Omit<Auth, 'id'>, 'joinedAt'>): Promise<Auth> {
+  public async mapUserWithOAuthId(
+    oauthID: string,
+    provider: OAuthProviders,
+  ): Promise<Auth> {
+    const response = await this.oauthRepo.findOne({
+      where: {
+        providerId: oauthID,
+        provider: provider,
+      },
+      relations: {
+        auth: true,
+      },
+    });
+
+    if (!response) return null;
+    return response.auth as Auth;
+  }
+
+  public async create(
+    user: Partial<{ email: string }> & { phoneNumber: string },
+  ): Promise<Auth> {
     return this.authRepo.save(user);
   }
 
@@ -34,8 +54,8 @@ export class AuthService {
 
     return await this.oauthRepo.save({
       provider,
-      authId: id,
-      id: oauthID,
+      providerId: oauthID,
+      auth: id,
     });
   }
 
@@ -72,21 +92,21 @@ export class AuthService {
       where: {
         phoneNumber: data.phoneNumber,
       },
-    });
-
-    const oauthIDs = await this.oauthRepo.find({
-      where: {
-        authId: user.id,
-      },
-      select: {
-        provider: true,
+      relations: {
+        oauths: true,
       },
     });
 
-    const loginOptions = oauthIDs.map((item) => item.provider as LoginOptions);
-    if (!loginOptions.length) {
-      loginOptions.push('auth/otp');
+    const loginOptions: LoginOptions[] = ['auth/otp'];
+
+    if (!user) {
+      return loginOptions;
     }
+
+    for (const item of user.oauths) {
+      loginOptions.push(item.provider as LoginOptions);
+    }
+
     return loginOptions;
   }
 }

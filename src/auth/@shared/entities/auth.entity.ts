@@ -2,14 +2,16 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  Generated,
-  PrimaryColumn,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
+import { OAuthID } from './oauth-id.entity';
 
 @Entity()
 export class Auth {
-  @PrimaryColumn()
-  @Generated('uuid')
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({
@@ -22,15 +24,9 @@ export class Auth {
   })
   phoneNumber: string;
 
-  // @Column({
-  //   nullable: true,
-  // })
-  // googleId?: string;
-
-  // @Column({
-  //   nullable: true,
-  // })
-  // githubId?: string;
+  @JoinColumn()
+  @OneToMany(() => OAuthID, (item) => item.auth)
+  oauths: OAuthID[];
 
   @CreateDateColumn()
   joinedAt: Date;

@@ -2,7 +2,7 @@ import {
   Column,
   Entity,
   JoinColumn,
-  OneToOne,
+  ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { OAuthProviders } from '../types/oauth-providers';
@@ -11,25 +11,20 @@ import { Auth } from './auth.entity';
 @Entity()
 export class OAuthID {
   @PrimaryGeneratedColumn()
-  rowID: number;
+  id: number;
 
   @Column({
     nullable: false,
+    unique: true,
   })
-  id: string;
+  providerId: string;
 
-  @Column({})
-  authId: string;
-
-  @OneToOne(() => Auth, {
-    cascade: true,
-    eager: true,
-  })
-  @JoinColumn({ name: 'authId' })
-  auth: Auth;
+  @JoinColumn()
+  @ManyToOne(() => Auth, (item) => item.id, { cascade: true, nullable: false })
+  auth: Auth | string;
 
   @Column({
-    enum: OAuthProviders,
+    nullable: false,
   })
   provider: OAuthProviders;
 }

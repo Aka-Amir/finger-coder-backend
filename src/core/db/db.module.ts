@@ -7,7 +7,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     TypeOrmModule.forRootAsync({
       useFactory: async () => {
         const { DatabaseConfig } = await import('./db.conf');
-        console.log(DatabaseConfig);
         return DatabaseConfig;
       },
     }),

@@ -2,12 +2,17 @@ import { JwtService } from '@nestjs/jwt';
 import { ITokenModel } from '../../types/interfaces/tokens/token-model.interface';
 import { Injectable } from '@nestjs/common';
 
+type TokenType<T> = T & {
+  exp: number;
+  iat: number;
+};
+
 @Injectable()
 export class TokensService<
   TAccessToken extends ITokenModel = ITokenModel,
   TRefreshToken extends ITokenModel = TAccessToken,
 > {
-  constructor(private readonly jwtService: JwtService) { }
+  constructor(private readonly jwtService: JwtService) {}
 
   async getAccessToken(data: TAccessToken): Promise<string> {
     return this.jwtService.signAsync(data, {
@@ -23,7 +28,9 @@ export class TokensService<
     });
   }
 
-  async validate(data: string): Promise<TAccessToken | TRefreshToken> {
+  async validate(
+    data: string,
+  ): Promise<TokenType<TAccessToken | TRefreshToken>> {
     return this.jwtService.verifyAsync(data, {
       algorithms: ['HS512', 'HS256'],
     });
