@@ -1,4 +1,4 @@
-import { User } from 'src/users/entities/user.entity';
+import { Auth } from 'src/auth/@shared/entities/auth.entity';
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 import { Event } from '../../events/entities/event.entity';
 
@@ -7,12 +7,12 @@ export class OfferCode {
   @PrimaryColumn()
   id: string;
 
-  @ManyToOne(() => User, (user) => user.id, {
+  @ManyToOne(() => Auth, (user) => user.id, {
     cascade: true,
     nullable: true,
   })
   @JoinColumn({ name: 'user' })
-  user: User | number | null;
+  user: Auth | string | null;
 
   @ManyToOne(() => Event, (e) => e.id, {
     cascade: true,

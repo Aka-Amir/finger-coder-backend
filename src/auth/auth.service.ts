@@ -6,13 +6,18 @@ import { Auth } from './@shared/entities/auth.entity';
 import { OAuthID } from './@shared/entities/oauth-id.entity';
 import { LoginOptions } from './@shared/types/basic-auth.types';
 import { OAuthProviders } from './@shared/types/oauth-providers';
+import { IEventPublisher } from 'src/core/types/interfaces/events/event-publisher.interface';
+import { usersEvent } from 'src/@events/users/users.event';
 
 @Injectable()
-export class AuthService {
+export class AuthService implements IEventPublisher {
   constructor(
     @InjectRepository(Auth) private readonly authRepo: Repository<Auth>,
     @InjectRepository(OAuthID) private readonly oauthRepo: Repository<OAuthID>,
   ) {}
+  get sourceName(): string {
+    return AuthService.name;
+  }
 
   public async mapUserWithOAuthId(
     oauthID: string,
@@ -35,7 +40,11 @@ export class AuthService {
   public async create(
     user: Partial<{ email: string }> & { phoneNumber: string },
   ): Promise<Auth> {
-    return this.authRepo.save(user);
+    const createdRecord = await this.authRepo.save(user);
+    usersEvent.emit(this, {
+      authId: createdRecord.id,
+    });
+    return createdRecord;
   }
 
   public async linkAccount(
@@ -82,6 +91,12 @@ export class AuthService {
       where: {
         id,
       },
+    });
+  }
+
+  public async updateUserEmail(userId: string, email: string) {
+    return this.authRepo.update(userId, {
+      email,
     });
   }
 

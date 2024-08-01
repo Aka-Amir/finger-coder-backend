@@ -47,7 +47,7 @@ export class GithubController {
         response.user.phoneNumber,
         response.oauthData.id.toString(),
       ),
-      tokenType: TokenType.access,
+      tokenType: TokenType.commonUser,
     });
     return new BrowserResponse({
       accessToken,

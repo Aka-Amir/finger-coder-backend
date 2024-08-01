@@ -10,6 +10,6 @@ export class CreateOfferCodeDto {
   @Min(1)
   amount: number;
 
-  userId?: number;
+  userId?: string;
   eventId?: number;
 }

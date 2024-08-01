@@ -17,7 +17,7 @@ import { PlansModule } from './plans/plans.module';
 import { SponsersModule } from './sponsers/sponsers.module';
 import { TeamModule } from './team/team.module';
 import { TransactionsModule } from './transactions/transactions.module';
-import { UsersModule } from './users/users.module';
+import { ProfileModule } from './profile/profile.module';
 
 @Module({
   imports: [
@@ -31,7 +31,6 @@ import { UsersModule } from './users/users.module';
     }),
     CoreModule,
     AdminsModule,
-    UsersModule,
     EventsModule,
     TeamModule,
     MediaModule,
@@ -53,6 +52,7 @@ import { UsersModule } from './users/users.module';
       sender: '2000500666',
     }),
     AuthModule,
+    ProfileModule,
   ],
   controllers: [AppController],
   providers: [AppService],

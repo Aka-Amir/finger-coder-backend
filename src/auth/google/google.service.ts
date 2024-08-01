@@ -1,25 +1,29 @@
 import { Injectable } from '@nestjs/common';
-import { GoogleSDKService } from 'src/core/sdk/google/google.service';
-import { AuthService } from '../auth.service';
-import { lastValueFrom } from 'rxjs';
 import { OAuthProviders } from '../@shared/types/oauth-providers';
+import { AuthService } from '../auth.service';
+import { GoogleUserDto } from './dto/google-user.dto';
 
 @Injectable()
 export class GoogleService {
-  constructor(
-    private readonly _googleService: GoogleSDKService,
-    private readonly _authService: AuthService,
-  ) {}
+  constructor(private readonly _authService: AuthService) {}
 
-  async linkAccount(phoneNumber: string, googleToken: string) {
-    const response = await lastValueFrom(
-      this._googleService.getUserInfo(googleToken),
-    );
-
-    return this._authService.linkAccount(
+  async linkAccount(phoneNumber: string, user: GoogleUserDto) {
+    const response = await this._authService.linkAccount(
       phoneNumber,
-      response.id,
+      user.id,
       OAuthProviders.GOOGLE,
     );
+    const userId = response.auth as string;
+    this._authService.updateUserEmail(userId, user.email);
+    return response;
+  }
+
+  async login(googleId: string) {
+    const response = this._authService.mapUserWithOAuthId(
+      googleId,
+      OAuthProviders.GOOGLE,
+    );
+
+    return response;
   }
 }

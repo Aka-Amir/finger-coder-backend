@@ -1,6 +1,7 @@
-import { User } from 'src/users/entities/user.entity';
 import ValidationStage from '../types/validation-stage.enum';
 
+import { Auth } from 'src/auth/@shared/entities/auth.entity';
+import { OfferCode } from 'src/offer-codes/entities/offer-code.entity';
 import {
   Column,
   CreateDateColumn,
@@ -10,7 +11,6 @@ import {
   PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { OfferCode } from 'src/offer-codes/entities/offer-code.entity';
 
 @Entity()
 export class Transactions {
@@ -44,8 +44,8 @@ export class Transactions {
   validationStage: ValidationStage;
 
   @JoinColumn({ name: 'userId' })
-  @ManyToOne(() => User, (u) => u.id, { cascade: true, nullable: false })
-  user: User | number;
+  @ManyToOne(() => Auth, (u) => u.id, { cascade: true, nullable: false })
+  user: Auth | string;
 
   @CreateDateColumn({
     type: 'datetime',

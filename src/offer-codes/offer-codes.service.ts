@@ -1,10 +1,10 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Auth } from 'src/auth/@shared/entities/auth.entity';
+import { Event } from 'src/events/entities/event.entity';
 import { Repository } from 'typeorm';
 import { CreateOfferCodeDto } from './dto/create-offer-code.dto';
 import { OfferCode } from './entities/offer-code.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/users/entities/user.entity';
-import { Event } from 'src/events/entities/event.entity';
 
 @Injectable()
 export class OfferCodesService {
@@ -27,10 +27,10 @@ export class OfferCodesService {
     nickname: true,
   };
 
-  async validateOfferCode(offerCode: string, userId: number, eventId: number) {
+  async validateOfferCode(offerCode: string, userId: string, eventId: number) {
     const offer = await this.findOne(offerCode);
     if (
-      (offer.user && (offer.user as User).id === userId) ||
+      (offer.user && (offer.user as Auth).id === userId) ||
       (offer.event && (offer.event as Event).id === eventId)
     ) {
       return {

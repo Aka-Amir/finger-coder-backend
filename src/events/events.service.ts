@@ -6,16 +6,16 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { lastValueFrom } from 'rxjs';
+import { Auth } from 'src/auth/@shared/entities/auth.entity';
 import { CallBackResponseDTO, ZibalSdkService } from 'src/core/sdk/zibal';
+import { OfferCodesService } from 'src/offer-codes/offer-codes.service';
 import { TransactionsService } from 'src/transactions/transactions.service';
 import ValidationStage from 'src/transactions/types/validation-stage.enum';
-import { User } from 'src/users/entities/user.entity';
 import { LessThan, Not, Repository } from 'typeorm';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { Event } from './entities/event.entity';
 import { EventsPayment } from './entities/events-payment.entity';
-import { OfferCodesService } from 'src/offer-codes/offer-codes.service';
 
 @Injectable()
 export class EventsService {
@@ -41,7 +41,7 @@ export class EventsService {
 
   async pay(
     id: number,
-    user: number,
+    user: string,
     offerCode?: string,
     callBaclUrl = 'events/confirm',
   ) {
@@ -70,7 +70,7 @@ export class EventsService {
     if (offerCode) {
       const offer = await this.offersService.findOne(offerCode);
       if (
-        (offer.user && (offer.user as User).id === user) ||
+        (offer.user && (offer.user as Auth).id === user) ||
         (offer.event && (offer.event as Event).id === id)
       ) {
         priceIRR = this.calculateDiscount(priceIRR, offer.amount);
@@ -100,7 +100,7 @@ export class EventsService {
     };
   }
 
-  async registeration(userId: number, eventId: number): Promise<EventsPayment> {
+  async registeration(userId: string, eventId: number): Promise<EventsPayment> {
     return this.paymentRepo.findOne({
       where: {
         user: userId,
@@ -181,7 +181,7 @@ export class EventsService {
 
     await this.paymentRepo.insert({
       transaction: response.transaction.id.toString(),
-      user: (response.transaction.user as User).id,
+      user: (response.transaction.user as Auth).id,
       event: eventId,
     });
 

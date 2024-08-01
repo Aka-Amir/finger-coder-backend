@@ -1,6 +1,6 @@
 export type TransactionConstruction = {
   id: string;
-  user: number;
+  user: string;
   metaData?: Record<string | number, any>;
   offerCode?: string;
 };

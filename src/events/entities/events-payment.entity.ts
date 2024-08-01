@@ -1,7 +1,7 @@
 import { Transactions } from 'src/transactions/entities/transactions.entity';
-import { User } from 'src/users/entities/user.entity';
 import { Event } from './event.entity';
 
+import { Auth } from 'src/auth/@shared/entities/auth.entity';
 import { Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
@@ -10,10 +10,10 @@ export class EventsPayment {
   id: number;
 
   @JoinColumn({ name: 'user' })
-  @ManyToOne(() => User, (item) => item.id, {
+  @ManyToOne(() => Auth, (item) => item.id, {
     cascade: true,
   })
-  user: User | number;
+  user: Auth | string;
 
   @JoinColumn({ name: 'event' })
   @ManyToOne(() => Event, (item) => item.id, {

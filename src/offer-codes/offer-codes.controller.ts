@@ -53,7 +53,7 @@ export class OfferCodesController {
     }
     return this.offerCodesService.validateOfferCode(
       offerCode,
-      +userId,
+      userId,
       +eventId,
     );
   }

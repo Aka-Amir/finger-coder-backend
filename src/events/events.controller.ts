@@ -58,7 +58,7 @@ export class EventsController {
         .digest('hex');
       return this.eventsService.pay(
         +id,
-        +userId,
+        userId,
         offer,
         `events/${id}/${transactionHash}/confirm`,
       );
@@ -98,7 +98,7 @@ export class EventsController {
   @UseGuards(AccessGuard)
   getRegistration(@Param('id') id: string, @TokenData('id') userId: string) {
     if (Number.isNaN(+id)) throw new BadRequestException();
-    return this.eventsService.registeration(+userId, +id);
+    return this.eventsService.registeration(userId, +id);
   }
 
   // @Post('confirm')
