@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { lastValueFrom } from 'rxjs';
-import { Auth } from 'src/auth/@shared/entities/auth.entity';
+import { Auth } from 'src/users/auth/@shared/entities/auth.entity';
 import { CallBackResponseDTO, ZibalSdkService } from 'src/core/sdk/zibal';
 import { OfferCodesService } from 'src/offer-codes/offer-codes.service';
 import { TransactionsService } from 'src/transactions/transactions.service';

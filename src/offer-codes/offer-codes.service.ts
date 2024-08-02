@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Auth } from 'src/auth/@shared/entities/auth.entity';
+import { Auth } from 'src/users/auth/@shared/entities/auth.entity';
 import { Event } from 'src/events/entities/event.entity';
 import { Repository } from 'typeorm';
 import { CreateOfferCodeDto } from './dto/create-offer-code.dto';

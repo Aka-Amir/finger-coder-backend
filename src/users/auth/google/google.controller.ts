@@ -10,7 +10,7 @@ import { Public } from 'src/core/decorators/public.decorator';
 import { TokenData } from 'src/core/decorators/token.decorator';
 import { TokensService } from 'src/core/services/tokens';
 import { TokenType } from 'src/core/types/enums/token-types.enum';
-import { userKeyGenerator } from 'src/users/helpers/user-key-generator.helper';
+import { userKeyGenerator } from '../@shared/helpers/user-key.generator';
 import { IAuthToken } from '../@shared/types/auth-token.interface';
 import { AuthTypes } from '../@shared/types/auth-types.enum';
 import { GoogleUserDto } from './dto/google-user.dto';

@@ -7,6 +7,7 @@ import { OtpModule } from './otp/otp.module';
 import { GithubModule } from './github/github.module';
 import { OAuthID } from './@shared/entities/oauth-id.entity';
 import { GoogleModule } from './google/google.module';
+import { UsersEventModule } from '../@events/users-events.module';
 
 @Global()
 @Module({
@@ -15,6 +16,7 @@ import { GoogleModule } from './google/google.module';
     GithubModule,
     OtpModule,
     GoogleModule,
+    UsersEventModule.forFeature(),
   ],
   controllers: [AuthController],
   providers: [AuthService],

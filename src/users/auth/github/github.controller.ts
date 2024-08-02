@@ -17,7 +17,7 @@ import { AuthTypes } from '../@shared/types/auth-types.enum';
 import { GithubService } from './github.service';
 import { GithubAuthGuard } from './github-auth.guard';
 import { TokenData } from 'src/core/decorators/token.decorator';
-import { userKeyGenerator } from 'src/users/helpers/user-key-generator.helper';
+import { userKeyGenerator } from '../@shared/helpers/user-key.generator';
 import { TokenType } from 'src/core/types/enums/token-types.enum';
 
 @Public()

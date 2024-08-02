@@ -4,7 +4,7 @@ import { randomCodeGenerator } from 'src/core/helpers/random-generator.helper';
 import { KavehnegarService } from 'src/core/sdk/kavehnegar/kavehnegar.service';
 import { TokensService } from 'src/core/services/tokens';
 import { TokenType } from 'src/core/types/enums/token-types.enum';
-import { userKeyGenerator } from 'src/users/helpers/user-key-generator.helper';
+import { userKeyGenerator } from '../@shared/helpers/user-key.generator';
 import { AuthService } from '../auth.service';
 import { SendOtpDto } from './dto/send-otp.dto';
 import { Auth } from '../@shared/entities/auth.entity';

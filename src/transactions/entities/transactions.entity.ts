@@ -1,6 +1,6 @@
 import ValidationStage from '../types/validation-stage.enum';
 
-import { Auth } from 'src/auth/@shared/entities/auth.entity';
+import { Auth } from 'src/users/auth/@shared/entities/auth.entity';
 import { OfferCode } from 'src/offer-codes/entities/offer-code.entity';
 import {
   Column,

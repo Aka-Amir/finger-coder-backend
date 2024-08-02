@@ -1,4 +1,4 @@
-import { Auth } from 'src/auth/@shared/entities/auth.entity';
+import { Auth } from 'src/users/auth/@shared/entities/auth.entity';
 import { Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()

@@ -1,28 +1,16 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
-import { ProfileService } from './profile.service';
-import { CreateProfileDto } from './dto/create-profile.dto';
+import { Body, Controller, Delete, Get, Param, Patch } from '@nestjs/common';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { ProfileService } from './profile.service';
+import { TokenData } from 'src/core/decorators/token.decorator';
+import { IAuthToken } from '../auth/@shared/types/auth-token.interface';
 
 @Controller('profile')
 export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
 
-  @Post()
-  create(@Body() createProfileDto: CreateProfileDto) {
-    return this.profileService.create(createProfileDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.profileService.findAll();
+  @Get('id')
+  findAll(@TokenData() token: IAuthToken) {
+    return this.profileService.findOrCreateProfileId(token.id);
   }
 
   @Get(':id')

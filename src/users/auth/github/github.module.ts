@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { GithubService } from './github.service';
 import { GithubController } from './github.controller';
-import { GithubModule as GithubSDKModule } from '../../core/sdk/github/github.module';
+import { GithubModule as GithubSDKModule } from 'src/core/sdk/github/github.module';
 import { TokensModule } from 'src/core/services/tokens';
 import { GithubAuthGuard } from './github-auth.guard';
 @Module({

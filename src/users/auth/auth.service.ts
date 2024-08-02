@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PhoneNumberDTO } from './@shared/dto/phone-number.dto';
@@ -7,13 +7,16 @@ import { OAuthID } from './@shared/entities/oauth-id.entity';
 import { LoginOptions } from './@shared/types/basic-auth.types';
 import { OAuthProviders } from './@shared/types/oauth-providers';
 import { IEventPublisher } from 'src/core/types/interfaces/events/event-publisher.interface';
-import { usersEvent } from 'src/@events/users/users.event';
+import { UsersEventModule } from '../@events/users-events.module';
+import { CreateUserEvent } from '../@events/create-user.event';
 
 @Injectable()
 export class AuthService implements IEventPublisher {
   constructor(
     @InjectRepository(Auth) private readonly authRepo: Repository<Auth>,
     @InjectRepository(OAuthID) private readonly oauthRepo: Repository<OAuthID>,
+    @Inject(UsersEventModule.events.createUser)
+    private readonly createEvent: CreateUserEvent,
   ) {}
   get sourceName(): string {
     return AuthService.name;
@@ -41,7 +44,7 @@ export class AuthService implements IEventPublisher {
     user: Partial<{ email: string }> & { phoneNumber: string },
   ): Promise<Auth> {
     const createdRecord = await this.authRepo.save(user);
-    usersEvent.emit(this, {
+    this.createEvent.emit(this, {
       authId: createdRecord.id,
     });
     return createdRecord;
