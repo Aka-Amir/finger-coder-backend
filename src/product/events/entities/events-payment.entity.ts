@@ -1,4 +1,4 @@
-import { Transactions } from 'src/transactions/entities/transactions.entity';
+import { Transactions } from 'src/payment/transactions/entities/transactions.entity';
 import { Event } from './event.entity';
 
 import { Auth } from 'src/users/auth/@shared/entities/auth.entity';

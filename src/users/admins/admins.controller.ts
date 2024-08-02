@@ -16,7 +16,7 @@ import {
 } from '@nestjs/common';
 import { createHash } from 'crypto';
 import { TokenType } from 'src/core/types/enums/token-types.enum';
-import { TokenData } from '../core/decorators/token.decorator';
+import { TokenData } from '../../core/decorators/token.decorator';
 import { AdminsService } from './admins.service';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { LoginAdminDto } from './dto/login-admin.dto';

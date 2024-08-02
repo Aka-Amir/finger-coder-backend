@@ -1,10 +1,11 @@
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { createHash } from 'crypto';
-import { AdminsService } from './admins/admins.service';
+
 import { AppModule } from './app.module';
 import { AuthGuard } from './core/guards/auth.guard';
 import { DatabaseInterceptor } from './core/interceptors/database.interceptor';
+import { AdminsService } from './users/admins/admins.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

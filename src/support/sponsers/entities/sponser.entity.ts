@@ -7,7 +7,7 @@ import {
   PrimaryColumn,
 } from 'typeorm';
 import { AcceptanceStatus } from '../types/acceptance-status.enum';
-import { Plan } from '../../plans/entities/plan.entity';
+import { Plan } from 'src/info/plans/entities/plan.entity';
 
 @Entity()
 export class Sponser {

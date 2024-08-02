@@ -1,7 +1,8 @@
+import { OfferCode } from 'src/product/offer-codes/entities/offer-code.entity';
 import ValidationStage from '../types/validation-stage.enum';
 
 import { Auth } from 'src/users/auth/@shared/entities/auth.entity';
-import { OfferCode } from 'src/offer-codes/entities/offer-code.entity';
+
 import {
   Column,
   CreateDateColumn,
