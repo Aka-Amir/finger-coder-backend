@@ -6,17 +6,15 @@ import {
   HttpCode,
   Ip,
   Post,
-  UseGuards,
 } from '@nestjs/common';
 import { Access } from 'src/core/decorators/access.decorator';
 import { Public } from 'src/core/decorators/public.decorator';
 import { TokenData } from 'src/core/decorators/token.decorator';
-import { AccessGuard } from 'src/core/guards/access.guard';
 import { TokenType } from 'src/core/types/enums/token-types.enum';
+import { IAuthToken } from '../@shared/types/auth-token.interface';
 import { SendOtpDto } from './dto/send-otp.dto';
 import { VerifyOtpCodeDto } from './dto/verify-otp.dto';
 import { InvalidOtpCodeException } from './errors/invalid-code.exception';
-import { IAuthToken } from '../@shared/types/auth-token.interface';
 import { OtpService } from './otp.service';
 
 @Controller('auth/otp')
@@ -43,7 +41,7 @@ export class OtpController {
 
   @Post('verify')
   @Access(TokenType.otpCode)
-  @UseGuards(AccessGuard)
+  // @UseGuards(AccessGuard)
   async verfiy(
     @Body() data: VerifyOtpCodeDto,
     @TokenData() token: IAuthToken,

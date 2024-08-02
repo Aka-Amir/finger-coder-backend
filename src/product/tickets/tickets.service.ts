@@ -1,26 +1,41 @@
 import { Injectable } from '@nestjs/common';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
+import { Repository } from 'typeorm';
+import { Ticket } from './entities/ticket.entity';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class TicketsService {
+  constructor(
+    @InjectRepository(Ticket)
+    private readonly repo: Repository<Ticket>,
+  ) {}
+
   create(createTicketDto: CreateTicketDto) {
-    return 'This action adds a new ticket';
+    return this.repo.save({
+      ...createTicketDto,
+      disableAt: createTicketDto.disableAt as Date | null,
+    });
   }
 
   findAll() {
-    return `This action returns all tickets`;
+    return this.repo.find();
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} ticket`;
+    return this.repo.findOne({
+      where: {
+        id,
+      },
+    });
   }
 
   update(id: number, updateTicketDto: UpdateTicketDto) {
-    return `This action updates a #${id} ticket`;
+    return this.repo.update(id, updateTicketDto);
   }
 
   remove(id: number) {
-    return `This action removes a #${id} ticket`;
+    return this.repo.delete(id);
   }
 }

@@ -35,17 +35,4 @@ export class Event {
 
   @Column('datetime')
   startDate: Date;
-
-  @Column()
-  price: number;
-
-  @Column({
-    default: 0,
-  })
-  discount: number;
-
-  @Column({
-    default: 30,
-  })
-  limit: number;
 }

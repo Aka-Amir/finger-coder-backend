@@ -6,17 +6,15 @@ import {
   Get,
   Param,
   Post,
-  UseGuards,
 } from '@nestjs/common';
+import { Access } from 'src/core/decorators/access.decorator';
+import { TokenData } from 'src/core/decorators/token.decorator';
+import { TokenType } from 'src/core/types/enums/token-types.enum';
 import { CreateOfferCodeDto } from './dto/create-offer-code.dto';
 import { OfferCodesService } from './offer-codes.service';
-import { AccessGuard } from 'src/core/guards/access.guard';
-import { Access } from 'src/core/decorators/access.decorator';
-import { TokenType } from 'src/core/types/enums/token-types.enum';
-import { TokenData } from 'src/core/decorators/token.decorator';
 
 @Controller('offer-codes')
-@UseGuards(AccessGuard)
+// @UseGuards(AccessGuard)
 export class OfferCodesController {
   constructor(private readonly offerCodesService: OfferCodesService) {}
 

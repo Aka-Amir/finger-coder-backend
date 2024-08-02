@@ -1,4 +1,3 @@
-import { OfferCode } from 'src/product/offer-codes/entities/offer-code.entity';
 import ValidationStage from '../types/validation-stage.enum';
 
 import { Auth } from 'src/users/auth/@shared/entities/auth.entity';
@@ -32,10 +31,6 @@ export class Transactions {
     },
   })
   metaData: Record<string | number, any> | null;
-
-  @JoinColumn({ name: 'offerCode' })
-  @ManyToOne(() => OfferCode, (u) => u.id, { cascade: true, nullable: true })
-  offerCode: string | OfferCode;
 
   @Column({
     type: 'enum',

@@ -1,6 +1,7 @@
-import { SetMetadata } from '@nestjs/common';
+import { applyDecorators, SetMetadata, UseGuards } from '@nestjs/common';
 import { TokenType } from '../types/enums/token-types.enum';
+import { AccessGuard } from '../guards/access.guard';
 
 export const ACCESS_TOKEN = 'ACCESS_TOKEN';
 export const Access = (...tokenType: TokenType[]) =>
-  SetMetadata(ACCESS_TOKEN, tokenType);
+  applyDecorators(SetMetadata(ACCESS_TOKEN, tokenType), UseGuards(AccessGuard));

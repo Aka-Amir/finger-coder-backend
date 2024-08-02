@@ -24,7 +24,11 @@ export class AccessGuard implements CanActivate {
 
     const token = context.switchToHttp().getRequest().__token as ITokenModel;
 
-    if (!accessList.includes(token.tokenType)) throw new ForbiddenException();
+    if (
+      !accessList.includes(token.tokenType) &&
+      token.tokenType !== TokenType.access
+    )
+      throw new ForbiddenException();
 
     return true;
   }

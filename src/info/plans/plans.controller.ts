@@ -22,7 +22,7 @@ export class PlansController {
   constructor(private readonly plansService: PlansService) {}
 
   @Post()
-  @UseGuards(AccessGuard)
+  // @UseGuards(AccessGuard)
   create(@Body() createPlanDto: CreatePlanDto) {
     return this.plansService.create(createPlanDto);
   }
@@ -40,13 +40,13 @@ export class PlansController {
   }
 
   @Patch(':id')
-  @UseGuards(AccessGuard)
+  // @UseGuards(AccessGuard)
   update(@Param('id') id: string, @Body() updatePlanDto: UpdatePlanDto) {
     return this.plansService.update(id, updatePlanDto);
   }
 
   @Delete(':id')
-  @UseGuards(AccessGuard)
+  // @UseGuards(AccessGuard)
   remove(@Param('id') id: string) {
     return this.plansService.remove(id);
   }

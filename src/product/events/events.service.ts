@@ -16,6 +16,7 @@ import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { Event } from './entities/event.entity';
 import { EventsPayment } from './entities/events-payment.entity';
+import { TicketsService } from '../tickets/tickets.service';
 
 @Injectable()
 export class EventsService {
@@ -26,6 +27,7 @@ export class EventsService {
     private readonly zibalSdk: ZibalSdkService,
     private readonly transactionsService: TransactionsService,
     private readonly offersService: OfferCodesService,
+    private readonly ticketsService: TicketsService,
   ) {}
 
   create(createEventDto: CreateEventDto) {
@@ -42,18 +44,20 @@ export class EventsService {
   async pay(
     id: number,
     user: string,
+    ticketId: number,
     offerCode?: string,
-    callBaclUrl = 'events/confirm',
+    callBacklUrl = 'events/confirm',
   ) {
     const event = await this.findOne(id);
+    const ticket = await this.ticketsService.findOne(ticketId);
 
-    let priceIRR = event.price * 10;
+    let priceIRR = ticket.priceIRT * 10;
 
     if (Date.now() >= event.startDate.getTime()) {
       throw new ForbiddenException('Time_exceeded'.toUpperCase());
     }
 
-    if (event.limit === 0) {
+    if (ticket.amount === 0) {
       throw new ForbiddenException('Reached_limit'.toUpperCase());
     }
 
@@ -63,8 +67,8 @@ export class EventsService {
       throw new ForbiddenException('USER_REGISTERED');
     }
 
-    if (event.discount) {
-      priceIRR = this.calculateDiscount(priceIRR, event.discount);
+    if (ticket.discount) {
+      priceIRR = this.calculateDiscount(priceIRR, ticket.discount);
     }
 
     if (offerCode) {
@@ -84,14 +88,17 @@ export class EventsService {
       this.zibalSdk.createLink({
         amount: priceIRR,
         orderId: event.id.toString(),
-        callBackUrl: this.zibalSdk.getCallbackUrl(callBaclUrl),
+        callBackUrl: this.zibalSdk.getCallbackUrl(callBacklUrl),
       }),
     );
 
     await this.transactionsService.createTransaction({
       id: payment.trackId.toString(),
       user: user,
-      offerCode,
+      metaData: {
+        ticketId: `${ticket.id}`,
+        offerCode: offerCode || '',
+      },
     });
 
     return {
@@ -162,16 +169,13 @@ export class EventsService {
       throw new BadRequestException('Invalid orderID');
     }
 
-    const { limit } = await this.repo.findOne({
-      where: {
-        id: eventId,
-      },
-      select: ['limit'],
-    });
+    const { amount, id: ticketID } = await this.ticketsService.findOne(
+      +response.transaction.metaData['ticketId'],
+    );
 
-    if (limit !== undefined && limit !== null) {
-      await this.repo.update(eventId, {
-        limit: limit - 1,
+    if (amount !== undefined && amount !== null) {
+      await this.ticketsService.update(ticketID, {
+        amount: amount - 1,
       });
     }
 
@@ -179,15 +183,17 @@ export class EventsService {
       throw new InternalServerErrorException('U_UND');
     }
 
+    const verificationResponse = await lastValueFrom(
+      this.zibalSdk.verifyPayment(+response.transaction.id),
+    );
+
     await this.paymentRepo.insert({
       transaction: response.transaction.id.toString(),
       user: (response.transaction.user as Auth).id,
       event: eventId,
+      ticket: ticketID,
+      offerCode: response.transaction.metaData['offerCode'] || null,
     });
-
-    const verificationResponse = await lastValueFrom(
-      this.zibalSdk.verifyPayment(+response.transaction.id),
-    );
 
     await this.transactionsService.setMetaData(
       response.transaction.id,

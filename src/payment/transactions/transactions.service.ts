@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   Injectable,
-  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -18,12 +17,10 @@ export class TransactionsService {
   ) {}
 
   async createTransaction(data: TransactionConstruction) {
-    Logger.debug(`User : ${data.user}`, TransactionsService.name);
     await this.transactionsDb.insert({
       user: data.user,
       id: data.id,
       metaData: data.metaData,
-      offerCode: data.offerCode,
     });
     return {
       id: data.id,

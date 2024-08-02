@@ -10,18 +10,17 @@ import {
   Put,
   Query,
   Res,
-  UseGuards,
 } from '@nestjs/common';
 import { createHash } from 'crypto';
 import { Response } from 'express';
 import { Access } from 'src/core/decorators/access.decorator';
+import { Public } from 'src/core/decorators/public.decorator';
 import { TokenData } from 'src/core/decorators/token.decorator';
-import { AccessGuard } from 'src/core/guards/access.guard';
 import { TokenType } from 'src/core/types/enums/token-types.enum';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { EventsService } from './events.service';
-import { Public } from 'src/core/decorators/public.decorator';
+import { PayEventDTO } from './dto/pay-event.dto';
 
 @Controller('events')
 export class EventsController {
@@ -29,7 +28,6 @@ export class EventsController {
 
   @Post()
   @Access(TokenType.access)
-  @UseGuards(AccessGuard)
   create(@Body() createEventDto: CreateEventDto) {
     if (createEventDto.startDate <= Date.now()) {
       throw new BadRequestException('Invalid date');
@@ -44,27 +42,23 @@ export class EventsController {
     return this.eventsService.getActiveEvents();
   }
 
-  @Get('pay/:id')
+  @Post('pay/:id')
   @Access(TokenType.access, TokenType.commonUser)
-  @UseGuards(AccessGuard)
   async pay(
     @Param('id') id: string,
     @TokenData('id') userId: string,
-    @Query('offer') offer?: string,
+    @Body() body: PayEventDTO,
   ) {
-    try {
-      const transactionHash = createHash('md5')
-        .update(process.env.SECRET_KEY + id.toString())
-        .digest('hex');
-      return this.eventsService.pay(
-        +id,
-        userId,
-        offer,
-        `events/${id}/${transactionHash}/confirm`,
-      );
-    } catch (e) {
-      console.log(e);
-    }
+    const transactionHash = createHash('md5')
+      .update(process.env.SECRET_KEY + id.toString())
+      .digest('hex');
+    return this.eventsService.pay(
+      +id,
+      userId,
+      body.ticketId,
+      body.offerCode,
+      `events/${id}/${transactionHash}/confirm`,
+    );
   }
 
   @Get()
@@ -88,14 +82,12 @@ export class EventsController {
 
   @Get(':id/payments')
   @Access(TokenType.access)
-  @UseGuards(AccessGuard)
   findPayments(@Param('id') id: string) {
     return this.eventsService.getAllPayments(+id);
   }
 
   @Get(':id/resgistration')
   @Access(TokenType.commonUser)
-  @UseGuards(AccessGuard)
   getRegistration(@Param('id') id: string, @TokenData('id') userId: string) {
     if (Number.isNaN(+id)) throw new BadRequestException();
     return this.eventsService.registeration(userId, +id);
@@ -140,17 +132,14 @@ export class EventsController {
     }
   }
 
-  // @Patch(':id')
   @Put(':id')
   @Access(TokenType.access)
-  @UseGuards(AccessGuard)
   update(@Param('id') id: string, @Body() updateEventDto: UpdateEventDto) {
     return this.eventsService.update(+id, updateEventDto);
   }
 
   @Delete(':id')
   @Access(TokenType.access)
-  @UseGuards(AccessGuard)
   remove(@Param('id') id: string) {
     return this.eventsService.remove(+id);
   }

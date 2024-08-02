@@ -27,7 +27,7 @@ export class MediaController {
   constructor(private readonly mediaService: MediaService) {}
 
   @Post()
-  @UseGuards(AccessGuard)
+  // @UseGuards(AccessGuard)
   @UseInterceptors(FileInterceptor('file'))
   create(
     @UploadedFile(

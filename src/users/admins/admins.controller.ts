@@ -40,7 +40,7 @@ export class AdminsController {
   ) {}
 
   @Post()
-  @UseGuards(AccessGuard)
+  // @UseGuards(AccessGuard)
   create(@Body() createAdminDto: CreateAdminDto) {
     createAdminDto.password = createHash('MD5')
       .update(createAdminDto.password)
@@ -97,14 +97,14 @@ export class AdminsController {
   }
 
   @Get()
-  @UseGuards(AccessGuard)
+  // @UseGuards(AccessGuard)
   findAll(@TokenData('superUser') superUser: boolean) {
     if (!superUser) throw new ForbiddenException();
     return this.adminsService.findAll();
   }
 
   @Get(':id')
-  @UseGuards(AccessGuard)
+  // @UseGuards(AccessGuard)
   findOne(
     @Param('id') id: string,
     @TokenData('superUser') superUser: boolean,
@@ -116,7 +116,7 @@ export class AdminsController {
 
   @Put(':id')
   @Patch(':id')
-  @UseGuards(AccessGuard)
+  // @UseGuards(AccessGuard)
   update(
     @Param('id') id: string,
     @Body() updateAdminDto: UpdateAdminDto,
@@ -134,7 +134,7 @@ export class AdminsController {
   }
 
   @Delete(':id')
-  @UseGuards(AccessGuard)
+  // @UseGuards(AccessGuard)
   remove(
     @Param('id') id: string,
     @TokenData('superUser') superUser: boolean,
