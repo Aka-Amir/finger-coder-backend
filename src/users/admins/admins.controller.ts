@@ -12,9 +12,11 @@ import {
   Patch,
   Post,
   Put,
-  UseGuards,
 } from '@nestjs/common';
 import { createHash } from 'crypto';
+import { Access } from 'src/core/decorators/access.decorator';
+import { Public } from 'src/core/decorators/public.decorator';
+import { TokensService } from 'src/core/services/tokens';
 import { TokenType } from 'src/core/types/enums/token-types.enum';
 import { TokenData } from '../../core/decorators/token.decorator';
 import { AdminsService } from './admins.service';
@@ -23,10 +25,6 @@ import { LoginAdminDto } from './dto/login-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
 import { IAdminAccessToken } from './types/admin-access-token.interface';
 import { IAdminRefreshToken } from './types/admin-refresh-token.interface';
-import { Access } from 'src/core/decorators/access.decorator';
-import { AccessGuard } from 'src/core/guards/access.guard';
-import { Public } from 'src/core/decorators/public.decorator';
-import { TokensService } from 'src/core/services/tokens';
 
 @Controller('admins')
 @Access(TokenType.access)

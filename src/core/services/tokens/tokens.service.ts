@@ -22,6 +22,10 @@ export class TokensService<
   }
 
   private encryptString(key: string) {
+    if (process.env.NODE_ENV !== 'PROD') {
+      return key;
+    }
+
     const cipher = createCipheriv('aes-256-gcm', this.key, this.iv);
     let newKey = cipher.update(key, 'utf-8', 'hex');
     newKey += cipher.final('hex');
@@ -29,6 +33,10 @@ export class TokensService<
   }
 
   private decryptString(key: string) {
+    if (process.env.NODE_ENV !== 'PROD') {
+      return key;
+    }
+
     const cipher = createCipheriv('aes-256-gcm', this.key, this.iv);
     let newKey = cipher.update(key, 'hex', 'utf-8');
     newKey += cipher.final('utf-8');
@@ -93,12 +101,17 @@ export class TokensService<
         algorithms: ['HS512', 'HS256'],
       })
       .then((response) => {
+        console.log(response);
         delete response.iat;
         delete response.exp;
         delete response.policy;
-        return this.decryptPayload(response) as TokenType<
+        const payload = this.decryptPayload(response) as TokenType<
           TAccessToken | TRefreshToken
         >;
+
+        console.log(payload);
+
+        return payload;
       });
   }
 }

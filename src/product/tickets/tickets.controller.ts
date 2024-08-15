@@ -12,6 +12,7 @@ import { TokenType } from 'src/core/types/enums/token-types.enum';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { TicketsService } from './tickets.service';
+import { Public } from 'src/core/decorators/public.decorator';
 
 @Controller('tickets')
 export class TicketsController {
@@ -30,13 +31,13 @@ export class TicketsController {
   }
 
   @Get()
-  @Access(TokenType.commonUser, TokenType.access)
+  @Public()
   findAll() {
     return this.ticketsService.findAll();
   }
 
   @Get(':id')
-  @Access(TokenType.commonUser, TokenType.access)
+  @Public()
   findOne(@Param('id') id: string) {
     return this.ticketsService.findOne(+id);
   }
