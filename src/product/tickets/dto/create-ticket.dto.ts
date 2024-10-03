@@ -6,12 +6,15 @@ export class CreateTicketDto {
   })
   title: string;
 
-  @Min(0, {
-    message: 'priceIRT_low',
+  @Min(1, {
+    // message: 'priceIRT_low',
+    message(validationArguments) {
+      return JSON.stringify(validationArguments);
+    },
   })
   priceIRT: number;
 
-  @Min(0, {
+  @Min(1, {
     message: 'amount_low',
   })
   amount: number;

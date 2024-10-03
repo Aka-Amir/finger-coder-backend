@@ -32,8 +32,12 @@ export class TicketsController {
 
   @Get()
   @Public()
-  findAll() {
-    return this.ticketsService.findAll();
+  async findAll() {
+    const [data, count] = await this.ticketsService.findAll();
+    return {
+      data,
+      count,
+    };
   }
 
   @Get(':id')

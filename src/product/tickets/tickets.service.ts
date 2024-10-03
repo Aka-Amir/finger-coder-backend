@@ -20,7 +20,7 @@ export class TicketsService {
   }
 
   findAll() {
-    return this.repo.find();
+    return this.repo.findAndCount();
   }
 
   findOne(id: number) {
