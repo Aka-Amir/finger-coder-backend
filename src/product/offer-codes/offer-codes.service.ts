@@ -20,11 +20,8 @@ export class OfferCodesService {
   };
 
   private readonly usersRelation = {
-    firstName: true,
-    lastName: true,
     id: true,
     phoneNumber: true,
-    nickname: true,
   };
 
   async validateOfferCode(offerCode: string, userId: string, eventId: number) {
