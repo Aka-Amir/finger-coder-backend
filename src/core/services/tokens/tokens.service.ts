@@ -101,15 +101,12 @@ export class TokensService<
         algorithms: ['HS512', 'HS256'],
       })
       .then((response) => {
-        console.log(response);
         delete response.iat;
         delete response.exp;
         delete response.policy;
         const payload = this.decryptPayload(response) as TokenType<
           TAccessToken | TRefreshToken
         >;
-
-        console.log(payload);
 
         return payload;
       });

@@ -37,9 +37,9 @@ export class ZibalSdkService {
         ...data,
       })
       .pipe(
-        map(({ data: httpResponse, config }) => {
-          console.log(config.baseURL + config.url);
-          // console.log(httpResponse);
+        map(({ data: httpResponse }) => {
+          // console.log(config.baseURL + config.url);
+          // // console.log(httpResponse);
           return httpResponse;
         }),
       )
@@ -52,12 +52,14 @@ export class ZibalSdkService {
   }
 
   verifyPayment(trackId: number) {
-    return this.http
-      .post<IVerifyResponse>(this.getRoute('verify'), {
-        merchant: this.config.credentials.merchant,
-        trackId,
-      })
-      .pipe(tap((item) => console.log(item.config.baseURL + item.config.url)))
-      .pipe(map(({ data }) => data));
+    return (
+      this.http
+        .post<IVerifyResponse>(this.getRoute('verify'), {
+          merchant: this.config.credentials.merchant,
+          trackId,
+        })
+        // .pipe(tap((item) => console.log(item.config.baseURL + item.config.url)))
+        .pipe(map(({ data }) => data))
+    );
   }
 }

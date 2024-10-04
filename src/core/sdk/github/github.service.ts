@@ -63,7 +63,6 @@ export class GithubService {
           throw new UnprocessableEntityException();
         }),
         map((item) => {
-          console.log(item.data);
           return item.data;
         }),
       );

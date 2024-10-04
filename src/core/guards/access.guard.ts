@@ -30,7 +30,6 @@ export class AccessGuard implements CanActivate {
     );
 
     const token = context.switchToHttp().getRequest().__token as ITokenModel;
-    console.log(token);
 
     if (+token.tokenType === TokenType.access) return true;
 
