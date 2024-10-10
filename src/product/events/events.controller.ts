@@ -18,9 +18,9 @@ import { Public } from 'src/core/decorators/public.decorator';
 import { TokenData } from 'src/core/decorators/token.decorator';
 import { TokenType } from 'src/core/types/enums/token-types.enum';
 import { CreateEventDto } from './dto/create-event.dto';
+import { PayEventDTO } from './dto/pay-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { EventsService } from './events.service';
-import { PayEventDTO } from './dto/pay-event.dto';
 
 @Controller('events')
 export class EventsController {
@@ -82,8 +82,36 @@ export class EventsController {
 
   @Get(':id/payments')
   @Access(TokenType.access)
-  findPayments(@Param('id') id: string) {
-    return this.eventsService.getAllPayments(+id);
+  async findPayments(
+    @Param('id') id: string,
+    @Query('from') from: string,
+    @Query('to') to: string,
+  ) {
+    const [list, count] = await this.eventsService.getAllPayments(+id, {
+      from: +from || undefined,
+      to: +to || undefined,
+    });
+    return {
+      list,
+      count,
+    };
+  }
+
+  @Get(':id/total-sell')
+  @Access(TokenType.access)
+  async totalSell(
+    @Param('id') id: string,
+    @Query('from') from: string,
+    @Query('to') to: string,
+  ) {
+    const [list, count] = await this.eventsService.getAllPayments(+id, {
+      from: +from || undefined,
+      to: +to || undefined,
+    });
+    return {
+      list,
+      count,
+    };
   }
 
   @Get(':id/resgistration')

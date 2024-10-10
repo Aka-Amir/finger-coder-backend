@@ -1,6 +1,6 @@
 import { HttpService } from '@nestjs/axios';
 import { Inject, Injectable } from '@nestjs/common';
-import { map, tap } from 'rxjs';
+import { map } from 'rxjs';
 import { IRequestForGateway } from './types/requests.types';
 import { IGatewayResponse, IVerifyResponse } from './types/response.types';
 import { IZibalConfig, IZibalFeatureConfig } from './types/zibal-config.type';

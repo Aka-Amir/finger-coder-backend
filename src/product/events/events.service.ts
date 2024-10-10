@@ -3,20 +3,21 @@ import {
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
+  Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { lastValueFrom } from 'rxjs';
-import { Auth } from 'src/users/auth/@shared/entities/auth.entity';
 import { CallBackResponseDTO, ZibalSdkService } from 'src/core/sdk/zibal';
-import { OfferCodesService } from '../offer-codes/offer-codes.service';
+import { Auth } from 'src/users/auth/@shared/entities/auth.entity';
+import { LessThan, Not, Repository } from 'typeorm';
 import { TransactionsService } from '../../payment/transactions/transactions.service';
 import ValidationStage from '../../payment/transactions/types/validation-stage.enum';
-import { LessThan, Not, Repository } from 'typeorm';
+import { OfferCodesService } from '../offer-codes/offer-codes.service';
+import { TicketsService } from '../tickets/tickets.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { Event } from './entities/event.entity';
 import { EventsPayment } from './entities/events-payment.entity';
-import { TicketsService } from '../tickets/tickets.service';
 
 @Injectable()
 export class EventsService {
@@ -108,15 +109,25 @@ export class EventsService {
   }
 
   async registeration(userId: string, eventId: number): Promise<EventsPayment> {
-    return this.paymentRepo.findOne({
-      where: {
-        user: userId,
-        event: eventId,
-      },
-      select: {
-        transaction: true,
-      },
-    });
+    return this.paymentRepo
+      .findOne({
+        where: {
+          user: {
+            id: userId,
+          },
+          event: {
+            id: eventId,
+          },
+        },
+        select: {
+          transaction: true,
+        },
+      })
+      .catch((e) => {
+        Logger.warn(`Failed to execute registeration`, EventsService.name);
+        console.log(e);
+        return null;
+      });
   }
 
   async getActiveEvents() {
@@ -140,8 +151,11 @@ export class EventsService {
     return events;
   }
 
-  async getAllPayments(eventId: number) {
-    return this.paymentRepo.find({
+  async getAllPayments(
+    eventId: number,
+    pagedData?: { from: number; to: number },
+  ) {
+    return this.paymentRepo.findAndCount({
       where: {
         event: eventId,
       },
@@ -151,6 +165,8 @@ export class EventsService {
         transaction: true,
         user: true,
       },
+      skip: pagedData?.from,
+      take: pagedData?.to,
     });
   }
 
